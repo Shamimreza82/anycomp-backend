@@ -1,13 +1,11 @@
+import AgentAPI from 'apminsight';
+AgentAPI.config();
 import swaggerUi from 'swagger-ui-express';
-
 import express, { Application } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-
 import { notFound } from './middlewares/notFound';
-
 import { swaggerSpec } from './lib/document/swagger';
-
 import { RootRouter } from './routes/rootRouter';
 import { globalErrorHandler } from './middlewares/errorHandler';
 

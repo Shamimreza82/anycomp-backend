@@ -66,35 +66,25 @@ const getAllUsers = async () => {
 
 
 
-const getSingleUser = async (payload: TUserPayload) => {
-
-const {email} = payload
-
-    const result = await prisma.user.findUnique({
-        where: { email }, 
-        select: {
-            fullName: true,
-            email: true,
-            role: true,
-            createdAt: true,
-            profile: true,
-        }
-    })
-    return result
-}
-
-
 
 
 /////// Profile ////////
 
-const createProfile = async (payload: TProfileInput, user: TUserPayload) => {
+const createProfile = async (payload: TProfileInput, user: TUserPayload, avatarUrl: string | null, resumeUrl: string | null) => {
+
+    payload.avatar = avatarUrl || undefined;
+    payload.resumeUpload = resumeUrl || undefined;
   const { workExperience, education, ...rest } = payload;
+
+
+
+
 
   const result = await prisma.profile.upsert({
     where: { userId: user.id }, // unique field
     update: {
       ...rest,
+
       // For nested relations, you might want to replace or update existing entries
       workExperience: {
         deleteMany: {}, // optional: delete old entries
@@ -119,6 +109,26 @@ const createProfile = async (payload: TProfileInput, user: TUserPayload) => {
 
   return result;
 };
+
+
+const getSingleUser = async (payload: TUserPayload) => {
+
+const {email} = payload
+
+    const result = await prisma.user.findUnique({
+        where: { email }, 
+        select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+            createdAt: true,
+            profile: true,
+        }
+    })
+    return result
+}
+
 
 
 

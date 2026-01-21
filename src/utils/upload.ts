@@ -1,20 +1,20 @@
-import multer from 'multer';
+import multer from "multer";
+import path from "path";
 
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: (req, file, cb) => {
-    if (file.fieldname === "avatar") {
-      if (!file.mimetype.startsWith("image/")) {
-        return cb(new Error("Only image files are allowed for avatar"));
-      }
-    } else if (file.fieldname === "resume") {
-      if (file.mimetype !== "application/pdf") {
-        return cb(new Error("Only PDF files are allowed for resume"));
-      }
-    }
-    cb(null, true);
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, "uploads/");
+//   },
+//   filename: (req, file, cb) => {
+//     const uniqueName =
+//       Date.now() + "-" + Math.round(Math.random() * 1e9);
+//     cb(null, uniqueName + path.extname(file.originalname));
+//   },
+// });
+
+export const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
   },
 });
-export default upload;

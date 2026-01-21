@@ -7,14 +7,20 @@ import { JobController } from "./job.controller";
 
 const router = express.Router();
 
+
+////Category///
+router.get("/category",  JobController.getAllCategory);
+router.post("/category",  JobController.createCategory);
+
+
+
+
+
 router.post("/",  JobController.createJob);
 router.get('/', JobController.getAllJobs)
 router.get('/:id', JobController.getJobById)
 
 
-////Category///
-router.post("/category",  JobController.createCategory);
-router.get("/category",  JobController.getAllCategory);
 
 
 

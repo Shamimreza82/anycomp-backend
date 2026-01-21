@@ -27,7 +27,7 @@ export const JobTypeEnum = z.enum([
 
 
 export const JobSchema = z.object({
-  jobUniqueId: z.string().min(1, "Job ID is required"),
+  jobUniqueId: z.string().optional(),
   title: z.string().min(1, "Job title is required"),     
   slug : z.string().min(1, "Slug is required").optional(),      
   jobRole: z.string().min(1, "Job role is required"),         

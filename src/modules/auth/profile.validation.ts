@@ -9,9 +9,10 @@ const workExperienceSchema = z.object({
   startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
     message: "Invalid start date",
   }),
-  endDate: z.string().optional().refine((date) => !date || !isNaN(Date.parse(date)), {
-    message: "Invalid end date",
-  }),
+  endDate: z
+    .string()
+    .optional()
+    .transform((date) => (date ? new Date(date) : null)),
 });
 
 // Education schema
@@ -21,9 +22,10 @@ const educationSchema = z.object({
   startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
     message: "Invalid start date",
   }),
-  endDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
-    message: "Invalid end date",
-  }),
+   endDate: z
+    .string()
+    .optional()
+    .transform((date) => (date ? new Date(date) : null)),
 });
 
 // Main Profile schema

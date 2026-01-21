@@ -67,9 +67,9 @@ model WorkExprience {
   companyLocation String
   jobRole         String
   startDate       DateTime
-
-  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  profileId String  
+  endDate         DateTime?
+  profile         Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId       String
 }
 
 model Education {
@@ -77,10 +77,10 @@ model Education {
   degree    String
   academy   String
   startDate DateTime
-  endDate   DateTime
+  endDate   DateTime?
 
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  profileId String 
+  profileId String
 }
 
 ///// Profile ////////////////////
@@ -98,7 +98,7 @@ model Job {
   title            String
   jobRole          String
   jobUniqueId      String   @unique
-  slug              String
+  slug             String
   responsibilities Json
   features         Json
   requirments      Json

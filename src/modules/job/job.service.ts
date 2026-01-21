@@ -7,23 +7,48 @@ import { TJobCategoryInput, TJobCreateInput } from "./job.validation"
 
 
 
+// const createJob = async (payload: TJobCreateInput) => {
+
+//   const id = await generateJobId()
+//   if (id) {
+//     payload.jobUniqueId = id
+//   } else {
+//     throw new AppError(500, "Id not found")
+//   }
+//   const result = await prisma.job.create({
+//     data: {
+//       ...payload,
+//       slug: createSlug(payload.title)
+//     }
+//   })
+//   return result
+// }
 const createJob = async (payload: TJobCreateInput) => {
+  const id = await generateJobId();
 
-  const id = await generateJobId()
-  if (id) {
-    payload.jobUniqueId = id
-  } else {
-    throw new AppError(500, "Id not found")
+  if (!id) {
+    throw new AppError(500, "Id not found");
   }
-  const result = await prisma.job.create({
-    data: {
-      ...payload,
-      slug: createSlug(payload.title)
-    }
-  })
-  return result
-}
 
+  const slug = createSlug(payload.title);
+
+  const result = await prisma.job.upsert({
+    where: {
+      jobUniqueId: payload.jobUniqueId ?? id, // 👈 required unique field
+    },
+    create: {
+      ...payload,
+      jobUniqueId: id,
+      slug,
+    },
+    update: {
+      ...payload,
+      slug,
+    },
+  });
+
+  return result;
+};
 
 
 const getAllJobs = async () => {

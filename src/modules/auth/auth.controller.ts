@@ -1,5 +1,4 @@
 
-
 import { TUserPayload } from "../../types/user";
 import { catchAsync } from "../../utils/catchAsync";
 import uploadToCloudinary from "../../utils/uploadToCloudinary";
@@ -12,7 +11,7 @@ const register = catchAsync(async (req, res) => {
   const result = await AuthService.register(req.body)
 
   res.status(201).json({
-    status: "success",
+    status: true,
     message: "User created successfully",
     data: {
       user: result,
@@ -36,7 +35,7 @@ const login = catchAsync(async (req, res) => {
   res.cookie('token', token, cookieOptions)
 
   res.status(201).json({
-    status: "success",
+    status: true,
     message: "User Login successfully",
     data: { token: token },
   })
@@ -48,7 +47,7 @@ const getAllUsers = catchAsync(async (req, res) => {
   const result = await AuthService.getAllUsers()
 
   res.status(201).json({
-    status: "success",
+    status: true,
     message: "get all users successfully",
     data: result
   })
@@ -61,7 +60,7 @@ const getSingleUser = catchAsync(async (req, res) => {
   const result = await AuthService.getSingleUser(user as TUserPayload)
 
   res.status(201).json({
-    status: "success",
+    status: true,
     message: "get single user successfully",
     data: result
   })
@@ -76,12 +75,46 @@ const getSingleUser = catchAsync(async (req, res) => {
 ////// Profile create /////////
 
 const createProfile = catchAsync(async (req, res) => {
-  const validatedData = profileSchema.parse(req.body.data);
+
+const data = JSON.parse(req.body.data);
+  const validatedData = profileSchema.parse(data);
+
+const files = req.files as {
+  avater?: Express.Multer.File[];
+  resume?: Express.Multer.File[];
+};
+
+const avater = files.avater?.[0];
+const resume = files.resume?.[0];
+  let avatarUrl: string | null = null;
+    let resumeUrl: string | null = null;
+  // const avater = 
+
+ // 🖼 Avatar upload
+    if (avater) {
+      avatarUrl = await uploadToCloudinary(
+        avater.buffer,
+        "profiles/avatars",
+        "image"
+      );
+    }
+
+    // 📄 Resume upload
+    if (resume) {
+      resumeUrl = await uploadToCloudinary(
+        resume.buffer,
+        "profiles/resumes",
+        "raw"
+      );
+    }
+
+
+
 
   const user = req.user
-  const result = await AuthService.createProfile(validatedData, user as TUserPayload)
+  const result = await AuthService.createProfile(validatedData, user as TUserPayload, avatarUrl, resumeUrl)
   res.status(201).json({
-    status: "success",
+    status: true,
     message: "Profile created successfully",
     data: result
   })

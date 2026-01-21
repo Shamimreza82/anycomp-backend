@@ -1,5 +1,6 @@
 import express from "express";
 import { Authrouter } from "../modules/auth/auth.router";
+import { Jobrouter } from "../modules/job/job.router";
 
 
 
@@ -11,6 +12,10 @@ const appRoutes = [
     {
         path: "/auth",
         route: Authrouter,
+    },
+     {
+        path: "/job",
+        route: Jobrouter,
     },
 ]
 

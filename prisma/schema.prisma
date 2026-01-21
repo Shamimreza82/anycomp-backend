@@ -94,27 +94,24 @@ enum JobType {
 }
 
 model Job {
-  id               String       @id @default(uuid())
-  jobUniqueId      String       @unique
-  responsibilities String[]
-  features         String[]
-  requirments      String[]
+  id               String   @id @default(uuid())
+  jobUniqueId      String   @unique
+  responsibilities Json
+  features         Json
+  requirments      Json
+  category         String
   requirSkills     String[]
   jobType          JobType
-  category         JobCategory?
   salaryRange      String
   location         String
   expDate          DateTime
-  createdAt        DateTime     @default(now())
-  jobCategoryId    String
+  createdAt        DateTime @default(now())
 }
 
 model JobCategory {
   id    String  @id @default(uuid())
   title String
   desc  String?
-  job   Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  jobId String  @unique
 }
 
 ///// Job Post /////

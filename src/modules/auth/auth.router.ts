@@ -13,8 +13,6 @@ router.get("/users",  AuthController.getAllUsers);
 
 
 
-
-
 export const Authrouter = router;
 
 

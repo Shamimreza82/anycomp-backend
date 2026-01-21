@@ -21,7 +21,6 @@ const register = async (payload: TUser) => {
 }
 
 
-
 const login = async (payload: TUser) => {
 
     const result = await prisma.user.findUnique({

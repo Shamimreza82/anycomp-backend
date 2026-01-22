@@ -8,6 +8,7 @@ import { createEmailToken } from '../../utils/createEmailToken';
 import sendEmail from '../../utils/sendEmail';
 import bcrypt from "bcryptjs";
 import { verifyEmailTemplate } from '../../utils/emailTemplate/VerifyLink';
+import { googleOAuthClient } from '../../config/oauth';
 
 
 
@@ -44,11 +45,6 @@ const register = async (payload: TUser) => {
     return {}
 }
 
-
-
-
-
-
 const login = async (payload: TUser) => {
 
 
@@ -84,6 +80,62 @@ const login = async (payload: TUser) => {
     })
     console.log(token)
     return { token }
+}
+
+
+
+
+
+const googleAuth = async (idToken: string) => {
+if (!idToken) {
+       throw new AppError(404, "requre idToken")
+    }
+
+    // 🔐 Verify token with Google
+    const ticket = await googleOAuthClient.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+// 
+
+        // const { picture, email, name} = payload || {};
+
+        // console.log(picture, email, name)
+
+    if (!payload?.email) {
+         throw new AppError(404, "Invalid OAuth token")
+    }
+
+    // 👤 Find or create user
+    let user = await prisma.user.findUnique({
+      where: { email: payload.email },
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: payload.email,
+          fullName: payload.name,
+          password: Math.random().toString(36).slice(-8), // Random password
+          role: "USER",
+          isEmailVerified: true,
+        },
+      });
+    }
+
+ const jwtPayload = {
+        id: user.id,
+        // name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+        // updatedAt: user.updatedAt
+    }
+    const token = jwt.sign(jwtPayload, process.env.JWT_SECRET || "ebdwegweuweurgweurguwer6734873457" as string, {
+        expiresIn: "7d"
+    })
+    return {token}
 }
 
 const verifyEmail = async (token: string) => {
@@ -172,8 +224,21 @@ const getSingleUser = async (payload: TUserPayload) => {
     return result
 }
 
+const me = async (user: TUserPayload) => {
 
-
+    const result = await prisma.user.findUnique({
+        where: { email: user.email },
+        select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+            createdAt: true,
+            profile: true,
+        }
+    })
+    return result
+}
 
 
 
@@ -184,7 +249,9 @@ export const AuthService = {
     createProfile,
     getSingleUser,
     login,
-    verifyEmail
+    verifyEmail, 
+    googleAuth, 
+    me
 }
 
 

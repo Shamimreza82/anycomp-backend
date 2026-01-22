@@ -16,10 +16,6 @@ const register = catchAsync(async (req, res) => {
     data: result
   })
 })
-
-
-
-
 const login = catchAsync(async (req, res) => {
 
   const { token } = await AuthService.login(req.body)
@@ -38,8 +34,6 @@ const login = catchAsync(async (req, res) => {
     data: { token: token },
   })
 })
-
-
 const verifyEmail = catchAsync(async (req, res) => {
 
   const token = req.query.token as string;
@@ -50,9 +44,6 @@ const verifyEmail = catchAsync(async (req, res) => {
     res.redirect(`${process.env.CLIENT_URL}/login`);
   }
 })
-
-
-
 
 const getAllUsers = catchAsync(async (req, res) => {
 
@@ -78,6 +69,38 @@ const getSingleUser = catchAsync(async (req, res) => {
     data: result
   })
 
+})
+
+
+const me = catchAsync(async (req, res) => {
+  const user = req.user
+
+  const result = await AuthService.me(user as TUserPayload)
+
+  res.status(201).json({
+    status: true,
+    message: "get my profile successfully",
+    data: result
+  })
+})
+
+
+
+
+const googleAuth = catchAsync(async (req, res) => {
+  const { idToken } = req.body
+  const { token } = await AuthService.googleAuth(idToken)
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  })
+
+  res.status(200).json({
+    status: true,
+    message: "User Login by Google successfully",
+  })
 })
 
 
@@ -141,7 +164,9 @@ export const AuthController = {
   getSingleUser,
   login,
   createProfile,
-  verifyEmail
+  verifyEmail, 
+  googleAuth, 
+  me
 }
 
 

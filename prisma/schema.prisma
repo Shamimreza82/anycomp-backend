@@ -20,8 +20,6 @@ enum Role {
   MODERATOR
 }
 
-
-
 model User {
   id                String             @id @default(uuid())
   fullName          String?            @map("full_name")
@@ -62,7 +60,7 @@ model CandidatePersonal {
   resume    String?
   religion  Religion? @relation(fields: [religionId], references: [id])
 
-  userId String @map("user_id")
+  userId String @unique @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   createdAt  DateTime @default(now()) @map("created_at")
@@ -73,8 +71,6 @@ model CandidatePersonal {
   @@map("candidate_personals")
 }
 
-
-
 model Religion {
   id                 String              @id @default(uuid())
   name               String
@@ -82,7 +78,6 @@ model Religion {
 
   @@map("religions")
 }
-
 
 ///////////////////////////////////  CandidatePersonal ///////////////////////////////////////////
 

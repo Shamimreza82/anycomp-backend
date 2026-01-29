@@ -5,6 +5,7 @@ import { ZodError } from 'zod';
 import { Prisma } from '@prisma/client';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import { logger } from './logger';
+import { handlePrismaError } from './error/prismaErrorHandler';
 
 export const globalErrorHandler = (
   err: any,
@@ -16,6 +17,7 @@ export const globalErrorHandler = (
   let message = err.message || 'Something went wrong';
   let errors: any[] = [];
   logger.error(err);
+
   // ✅ ZOD ERROR HANDLING
   if (err instanceof ZodError) {
     statusCode = 400;
@@ -70,27 +72,20 @@ export const globalErrorHandler = (
     )
     // return res.redirect(`${process.env.CLIENT_URL}/error?message=${message}`);
   }
+
+
   // ✅ PRISMA ERROR HANDLING
-  else if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    // Known Prisma errors, like unique constraint failed
-    statusCode = 400;
-    message = `Prisma Error: ${err.message}`;
-    errors.push({
-      code: err.code,
-      meta: err.meta,
-      target: err.meta?.target,
-    });
-  } else if (err instanceof Prisma.PrismaClientValidationError) {
-    // Validation error
-    statusCode = 400;
-    message = `Prisma Validation Error: ${err.message}`;
-  } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
-    statusCode = 500;
-    message = `Prisma Unknown Error: ${err.message}`;
-  } else if (err instanceof Prisma.PrismaClientRustPanicError) {
-    statusCode = 500;
-    message = `Prisma Panic Error: ${err.message}`;
+
+  // =======================
+  // ✅ PRISMA ERROR (CORE FIX)
+  // =======================
+  else if ( err instanceof Prisma.PrismaClientKnownRequestError || err instanceof Prisma.PrismaClientValidationError || err instanceof Prisma.PrismaClientUnknownRequestError
+  ) {
+    const prismaError = handlePrismaError(err);
+    statusCode = prismaError.statusCode;
+    message = prismaError.message;
   }
+
 
   res.status(statusCode).json({
     success: false,

@@ -1,3 +1,4 @@
+import { TUserPayload } from "../../types/user";
 import { catchAsync } from "../../utils/catchAsync";
 import { AuthService } from "./auth.service";
 
@@ -76,6 +77,26 @@ const resetPassword = catchAsync(async (req, res) => {
     data: result,
   })
 })
+
+
+
+const changePassword = catchAsync(async (req, res) => {
+
+  const user = req.user as TUserPayload
+
+  const result = await AuthService.changePassword(req.body, user)
+
+  console.log(result)
+  res.status(200).json({
+    status: true,
+    message: "Your Password change Successfully",
+    data: result,
+  })
+})
+
+
+
+
 const logout = catchAsync(async (req, res) => {
 
   try {
@@ -97,6 +118,8 @@ const logout = catchAsync(async (req, res) => {
     });
   }
 });
+
+
 ////// Auth /////////
 
 
@@ -107,7 +130,8 @@ export const AuthController = {
   googleAuth,
   forgotPassword, 
   resetPassword, 
-  logout
+  logout, 
+  changePassword, 
 }
 
 

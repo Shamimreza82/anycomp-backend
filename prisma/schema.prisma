@@ -1,143 +1,3 @@
-// // This is your Prisma schema file,
-// // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-// generator client {
-//   provider = "prisma-client-js"
-// }
-
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
-
-// ////////////// 
-// enum Role {
-//   HR
-//   USER
-//   ADMIN
-//   MODERATOR
-// }
-
-// model User {
-//   id              String   @id @default(uuid())
-//   fullName        String?
-//   email           String   @unique
-//   phone           String?  @unique
-//   isActive        Boolean  @default(true)
-//   isEmailVerified Boolean  @default(false)
-//   password        String
-//   role            Role     @default(USER)
-//   createdAt       DateTime @default(now())
-
-//   profile      Profile?
-//   certificates Certificate[]
-// }
-
-// ////// Profile //////////////////////////////
-
-// model Profile {
-//   id              String          @id @default(uuid())
-//   avatar          String?
-//   dob             DateTime
-//   address         String
-//   country         String
-//   zip             String
-//   maritalStatus   Boolean
-//   bio             String
-//   isVerified      Boolean
-//   totalExperience String
-//   portfolioLink   String?
-//   socialLink      String[]
-//   resumeUpload    String?
-//   certificates    Certificate[]
-//   workExperience  WorkExprience[]
-//   education       Education[]
-//   skill           String[]
-
-//   userId String @unique
-//   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-// }
-
-// model WorkExprience {
-//   id              String    @id @default(uuid())
-//   jobTitle        String
-//   companyTitle    String
-//   companyLocation String
-//   jobRole         String
-//   startDate       DateTime
-//   endDate         DateTime?
-//   profile         Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
-//   profileId       String
-// }
-
-// model Education {
-//   id        String    @id @default(uuid())
-//   degree    String
-//   academy   String
-//   startDate DateTime
-//   endDate   DateTime?
-
-//   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-//   profileId String
-// }
-
-// model Certificate {
-//   id         String   @id @default(uuid())
-//   user       User     @relation(fields: [userId], references: [id])
-//   userId     String
-//   name       String // name of the certificate
-//   filePath   String // path to the uploaded file
-//   uploadedAt DateTime @default(now())
-//   profile    Profile? @relation(fields: [profileId], references: [id])
-//   profileId  String?
-// }
-
-// ///// Profile ////////////////////
-
-// ///// Job Post /////
-
-// enum JobType {
-//   FULL_TIME
-//   REMOTE
-//   HYBIRD
-// }
-
-// model Job {
-//   id               String      @id @default(uuid())
-//   title            String
-//   jobRole          String
-//   jobUniqueId      String      @unique
-//   slug             String
-//   responsibilities Json
-//   features         Json
-//   requirments      Json
-//   requirSkills     String[]
-//   jobType          JobType
-//   salaryRange      String
-//   location         String
-//   expDate          DateTime
-//   createdAt        DateTime    @default(now())
-//   category         JobCategory @relation(fields: [categoryId], references: [id])
-//   categoryId       String
-// }
-
-// model JobCategory {
-//   id    String  @id @default(uuid())
-//   title String
-//   desc  String?
-//   jobs  Job[]
-// }
-
-// ///// Job Post /////
-
-// model JobAlart {
-//   id    String @id @default(uuid())
-//   email String @unique
-// }
-
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
@@ -160,180 +20,152 @@ enum Role {
   MODERATOR
 }
 
+
+
 model User {
-  id              String   @id @default(uuid())
-  fullName        String?  @map("full_name")
-  email           String   @unique 
-  phone           String?  @unique
-  isActive        Boolean  @default(true) @map("is_active")
-  isEmailVerified Boolean  @default(false)  @map("is_email_verified")
-  password        String
-  role            Role     @default(USER)
-  createdAt       DateTime @default(now()) @map("created_at")
-  profile         Profile?
+  id                String             @id @default(uuid())
+  fullName          String?            @map("full_name")
+  email             String             @unique
+  phone             String?            @unique
+  isActive          Boolean            @default(true) @map("is_active")
+  isEmailVerified   Boolean            @default(false) @map("is_email_verified")
+  password          String
+  role              Role               @default(USER)
+  createdAt         DateTime           @default(now()) @map("created_at")
+  candidatePersonal CandidatePersonal?
 
-  certificates Certificate[]
-
+  @@index([id, email])
   @@map("users")
 }
 
-////// Profile //////////////////////////////
+///////////////////////////////////  CandidatePersonal ///////////////////////////////////////////
 
-enum BloodGroup {
-  A_POS
-  A_NEG
-  B_POS
-  B_NEG
-  O_POS
-  O_NEG
-  AB_POS
-  AB_NEG
+model CandidatePersonal {
+  id              String    @id @default(uuid())
+  careerTitle     String?   @map("career_title")
+  careerObjective String?   @map("career_objective")
+  dob             DateTime?
+  fullName        String    @map("full_name")
+  fatherName      String?   @map("father_name")
+  motherName      String?   @map("mother_name")
+  spouseName      String?   @map("spouse_name")
+  mobileNo        String?   @map("mobile_no")
+  alternatePhone  String?   @map("alternate_phone")
+  // gender          Gender?
+  // maritalStatus   MaritalStatus @map("marital_status")
+  nationality     String?
+  nationalId      String?   @map("national_id")
+  portfolioLink   String?   @map("portfolio_link")
+
+  photo     String?
+  signature String?
+  resume    String?
+  religion  Religion? @relation(fields: [religionId], references: [id])
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  religionId String?
+
+  @@index([userId])
+  @@map("candidate_personals")
 }
 
-model Profile {
-  id               String           @id @default(uuid())
-  userId           String           @unique @map("user_id")
-  isVerified       Boolean          @default(false) @map("is_verified")
-  careerObjective  String?          @map("career_objective")
-  dob              DateTime?
-  fatherName       String?          @map("father_name")
-  motherName       String?          @map("mother_name")
-  spouseName       String?          @map("spouse_name")
-  height           String?
-  weight           String?
-  bloodGroup       BloodGroup?      @map("blood_group")
-  nationality      String?
-  religion         String?
-  maritalStatus    Boolean          @default(false) @map("marital_status")
-  totalExperience  String?          @map("total_experience")
-  portfolioLink    String?          @map("portfolio_link")
-  presentAddress   Address?         @relation("PresentAddress")
-  permanentAddress Address?         @relation("PermanentAddress")
-  socialLinks      SocialLink[]
-  skills           Skill[]
-  workExperiences  WorkExperience[]
-  educations       Education[]
-  certificates     Certificate[]
-  createdAt        DateTime         @default(now()) @map("created_at")
-  updatedAt        DateTime         @updatedAt @map("updated_at")
-  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  @@map("profiles")
+
+model Religion {
+  id                 String              @id @default(uuid())
+  name               String
+  candidatePersonals CandidatePersonal[]
+
+  @@map("religions")
 }
 
-model SocialLink {
-  id        String  @id @default(uuid())
-  url       String
-  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  profileId String  @map("profile_id")
 
-  @@map("social_links")
-}
+///////////////////////////////////  CandidatePersonal ///////////////////////////////////////////
 
-model Skill {
-  id        String  @id @default(uuid())
+// model CandidateEducation {
+//   id          String  @id @default(uuid())
+//   studyYear   String? @map("study_year")
+//   passingYear String? @map("passing_year")
+//   resultType  String? @map("result_type")
+//   result      String?
+//   totalCgpa   String? @map("total_cgpa")
+
+//   userId String @map("user_id")
+//   user   User   @relation(fields: [userId], references: [id])
+
+//   createdAt DateTime @default(now()) @map("created_at")
+//   updatedAt DateTime @updatedAt @map("updated_at")
+
+//   @@map("candidate_education")
+// }
+
+// model CandidateExperience {
+//   id              String    @id @default(uuid())
+//   companyName     String    @map("company_name")
+//   companyBusiness String?   @map("company_business")
+//   location        String?
+//   designation     String
+//   department      String?
+//   startDate       DateTime  @map("employment_period_start_date")
+//   endDate         DateTime? @map("employment_period_end_date")
+
+//   userId String @map("user_id")
+//   user   User   @relation(fields: [userId], references: [id])
+
+//   createdAt DateTime @default(now()) @map("created_at")
+//   updatedAt DateTime @updatedAt @map("updated_at")
+
+//   @@map("candidate_experience")
+// }
+
+// model Skill {
+//   id        String @id @default(uuid())
+//   skillName String @map("skill_name")
+
+//   personalId String            @map("candidate_personals_id")
+//   personal   CandidatePersonal @relation(fields: [personalId], references: [id])
+
+//   @@map("skills")
+// }
+
+// model Address {
+//   id                String  @id @default(uuid())
+//   addressLine       String  @map("address_line")
+//   isCityCorporation Boolean @default(false) @map("is_city_corporation")
+//   // cityCorporation   CityCorporation? @map("city_corporation_name")
+//   division          String
+//   district          String
+//   thana             String?
+//   upazilla          String?
+//   union             String?
+//   wardNo            String? @map("ward_no")
+//   zipCode           String? @map("zip_code")
+//   country           String
+
+//   addressTypeId String @map("address_type_id")
+//   userId        String @map("user_id")
+
+//   createdAt DateTime @default(now()) @map("created_at")
+//   updatedAt DateTime @updatedAt @map("updated_at")
+
+//   @@map("addresses")
+// }
+
+/////// Dropdown Option Tabile ///////////////////////////
+
+model baseDivision {
+  id        String   @id @default(uuid())
+  geoCode   String   @map("geo_code")
   name      String
-  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  profileId String  @map("profile_id")
+  bnName    String   @map("bn_name")
+  url       String?
+  status    Boolean
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("skills")
+  @@map("base_divisions") // table name in DB
 }
-
-model Education {
-  id        String    @id @default(uuid())
-  degree    String
-  academy   String
-  startDate DateTime  @map("start_date")
-  endDate   DateTime? @map("end_date")
-  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  profileId String    @map("profile_id")
-
-  @@map("educations")
-}
-
-model Address {
-  id String @id @default(uuid())
-
-  address            String
-  thana              String
-  district           String
-  country            String
-  zip                String
-  presentOf          Profile? @relation("PresentAddress", fields: [presentProfileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  presentProfileId   String?  @unique
-  permanentOf        Profile? @relation("PermanentAddress", fields: [permanentProfileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  permanentProfileId String?  @unique
-
-  @@map("addresses")
-}
-
-model WorkExperience {
-  id String @id @default(uuid())
-
-  jobTitle        String    @map("job_title")
-  companyTitle    String    @map("company_title")
-  companyLocation String    @map("company_location")
-  jobRole         String    @map("job_role")
-  startDate       DateTime  @map("start_date")
-  endDate         DateTime? @map("end_date")
-  profile         Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  profileId       String    @map("profile_id")
-
-  @@map("work_experiences")
-}
-
-///// Profile ////////////////////
-
-model Certificate {
-  id         String   @id @default(uuid())
-  profileId  String?  @map("profile_id")
-  name       String // name of the certificate
-  filePath   String   @map("file_path")
-  uploadedAt DateTime @default(now()) @map("uploaded_at")
-  profile    Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  user       User?    @relation(fields: [userId], references: [id])
-  userId     String?
-
-  @@map("certificates")
-}
-
-///// Job Post /////
-
-// enum JobType {
-//   FULL_TIME
-//   REMOTE
-//   HYBIRD
-// }
-
-// model Job {
-//   id               String      @id @default(uuid())
-//   title            String
-//   jobRole          String
-//   jobUniqueId      String      @unique
-//   slug             String
-//   responsibilities Json
-//   features         Json
-//   requirments      Json
-//   requirSkills     String[]
-//   jobType          JobType
-//   salaryRange      String
-//   location         String
-//   expDate          DateTime
-//   createdAt        DateTime    @default(now())
-//   category         JobCategory @relation(fields: [categoryId], references: [id])
-//   categoryId       String
-// }
-
-// model JobCategory {
-//   id    String  @id @default(uuid())
-//   title String
-//   desc  String?
-//   jobs  Job[]
-// }
-
-// ///// Job Post /////
-
-// model JobAlart {
-//   id    String @id @default(uuid())
-//   email String @unique
-// }

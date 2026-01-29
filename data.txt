@@ -1,0 +1,15 @@
+INSERT INTO religions (id, name) VALUES
+(gen_random_uuid(), 'Islam'),
+(gen_random_uuid(), 'Hinduism'),
+(gen_random_uuid(), 'Christianity'),
+(gen_random_uuid(), 'Buddhism'),
+(gen_random_uuid(), 'Judaism'),
+(gen_random_uuid(), 'Sikhism'),
+(gen_random_uuid(), 'Atheist'),
+(gen_random_uuid(), 'Other');
+
+
+
+
+
+

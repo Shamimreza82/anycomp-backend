@@ -1,48 +1,39 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '../../config/prisma';
-import { TProfileInput } from './user.validation';
-import { AppError } from '../../utils/AppError';
 import { TUserPayload } from '../../types/user';
+import { TCanditateProfile } from './user.validation';
 
 
 
-//////////////////////////////////////// Profile Services //////////////////////////////////////////
 
-const createProfile = async (payload: TProfileInput, user: TUserPayload, avatarUrl: string | null, resumeUrl: string | null) => {
+//////////////////////////////////////// Profile Services /////////////////////////////////////////////
 
-    payload.avatar = avatarUrl || undefined;
-    payload.resumeUpload = resumeUrl || undefined;
-    const { workExperience, education, ...rest } = payload;
+const createCandidatePersonalService = async (payload: TCanditateProfile, user: TUserPayload) => {
 
-    const result = await prisma.profile.upsert({
-        where: { userId: user.id }, // unique field
+    const result = await prisma.candidatePersonal.upsert({
+        where: {
+            userId: user.id, // or another unique field to identify the record
+        },
         update: {
-            ...rest,
-
-            // For nested relations, you might want to replace or update existing entries
-            workExperiences: {
-                deleteMany: {}, // optional: delete old entries
-                create: workExperience?.map((we) => ({ ...we })),
-            },
-            educations: {
-                deleteMany: {},
-                create: education?.map((edu) => ({ ...edu })),
-            },
+            ...payload, // update with new payload
         },
         create: {
-            ...rest,
+            ...payload, // create with payload if not exists
             userId: user.id,
-            workExperiences: {
-                create: workExperience?.map((we) => ({ ...we })),
-            },
-            educations: {
-                create: education?.map((edu) => ({ ...edu })),
-            },
+        },
+        include: {
+            religion: true,
+            user: true,
         },
     });
-
     return result;
 };
+
+
+
+
+
+
 const me = async (user: TUserPayload) => {
 
     const result = await prisma.user.findUnique({
@@ -53,38 +44,42 @@ const me = async (user: TUserPayload) => {
             email: true,
             role: true,
             createdAt: true,
-            profile: true,
+            candidatePersonal: {
+                include: {
+                    religion: true
+                }
+            }
         }
     })
     return result
 }
 
 
-const createCertificate = async (user: TUserPayload, files: Express.Multer.File[], certNames: string[]) => {
- 
-    console.log(user, files, certNames)
-    if (files.length !== certNames.length) {
-        throw new AppError(400, "Number of files and certificate names must match");
-    }   
+// const createCertificate = async (user: TUserPayload, files: Express.Multer.File[], certNames: string[]) => {
+
+//     console.log(user, files, certNames)
+//     if (files.length !== certNames.length) {
+//         throw new AppError(400, "Number of files and certificate names must match");
+//     }
 
 
-    // const result = await prisma.certificate.createMany({
-    //     data: {
-    //         userId: user.id,
-    //         filePath: files.map(file => file.path),
-    //         certNames: certNames,
-    //     },
-    // });    
+//     // const result = await prisma.certificate.createMany({
+//     //     data: {
+//     //         userId: user.id,
+//     //         filePath: files.map(file => file.path),
+//     //         certNames: certNames,
+//     //     },
+//     // });    
 
 
-    // return result; 
-}
+//     // return result; 
+// }
 //////////////////////////////// Profile Services //////////////////////////////////////////////////
 
 export const UserService = {
-    createProfile,
-    me, 
-    createCertificate
+    createCandidatePersonalService,
+    me,
+    // createCertificate
 }
 
 

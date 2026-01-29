@@ -17,4 +17,5 @@ export interface TUser {
     email: string;
     role: 'HR' | 'ADMIN' | 'USER' | "MODERATOR"; // Extend as needed
     password: string;
+    recaptchaToken?: string
 }

@@ -6,3 +6,4 @@ export const validationSchema = (schema: z.ZodSchema) => catchAsync(async (req, 
     req.body = schema.parse(req.body);
     next();
 })
+

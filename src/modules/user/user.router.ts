@@ -5,6 +5,7 @@ import express from "express";
 import { UserController } from './user.controller';
 import { validationSchema } from '../../middlewares/validationSchema';
 import { UserProfileValidation } from './user.validation';
+import { prisma } from '../../config/prisma';
 // import { validationSchema } from '../../middlewares/validationSchema';
 // import { profileSchema } from './user.validation';
 
@@ -14,24 +15,18 @@ const router = express.Router();
 
 
 // router.post("/certificates", uploadBystorage.array("certificates"),  auth(AuthGard.USER), UserController.createCertificate);
+///Get my Profile
 router.get('/me', auth(AuthGard.ADMIN, AuthGard.MODERATOR, AuthGard.USER, AuthGard.HR), UserController.me);
 
-///// candidate personal /////////////
+///// candidate Profile create /////////////
 router.post('/profile/personal', validationSchema(UserProfileValidation.userProfileSPersonalchema), auth(AuthGard.USER), UserController.createCandidatePersonal)
+router.post('/profile/experience',validationSchema(UserProfileValidation.workExperienceArraySchema), auth(AuthGard.USER), UserController.createCandidateExperience)
+///// candidate Profile /////////////
 
 
+//////////////////Dropdown api  /////////////////////
 
-//////////////////get /////////////////////
-
-
-router.post('/profile/educations', auth(AuthGard.USER), UserController.createCandidatePersonal)
-router.post('/profile/experiences', auth(AuthGard.USER), UserController.createCandidatePersonal)
-// router.post('/profile/personal', auth(AuthGard.USER), UserController.createCandidatePersonal)
-// router.post('/profile/personal', auth(AuthGard.USER), UserController.createCandidatePersonal)
-
-
-
-
+router.get("/profile/cascade",UserController.getDivisionWithDistrictsAndUpazilas);
 
 
 

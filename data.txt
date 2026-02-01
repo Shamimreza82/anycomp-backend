@@ -1,5 +1,5 @@
-/////// religions Dropdowns //////////
 
+ -- blood_groups
 INSERT INTO religions (id, name) VALUES
 (gen_random_uuid(), 'Islam'),
 (gen_random_uuid(), 'Hinduism'),
@@ -11,11 +11,7 @@ INSERT INTO religions (id, name) VALUES
 (gen_random_uuid(), 'Other');
 
 
-
-
-/////// Blood Group Dropdowns //////////
-
-
+ -- blood_groups
 INSERT INTO blood_groups (id, name) VALUES
 (gen_random_uuid(), 'A+'),
 (gen_random_uuid(), 'A-'),
@@ -27,10 +23,7 @@ INSERT INTO blood_groups (id, name) VALUES
 (gen_random_uuid(), 'O-');
 
 
-
-/////// Skill Dropdowns //////////
- 
-
+ -- skills
 INSERT INTO skills (id, skill_name) VALUES
 (gen_random_uuid(), 'JavaScript'),
 (gen_random_uuid(), 'TypeScript'),
@@ -49,11 +42,7 @@ INSERT INTO skills (id, skill_name) VALUES
 (gen_random_uuid(), 'GitHub');
 
 
-
-
-
-/////// Intersts Dropdowns //////////
-
+-- intersts
 INSERT INTO intersts (id, interst_name) VALUES
 (gen_random_uuid(), 'Programming'),
 (gen_random_uuid(), 'Web Development'),
@@ -70,3 +59,90 @@ INSERT INTO intersts (id, interst_name) VALUES
 (gen_random_uuid(), 'Startup & Entrepreneurship'),
 (gen_random_uuid(), 'Freelancing'),
 (gen_random_uuid(), 'Teaching & Mentoring');
+
+
+
+-- Division
+INSERT INTO divisions (id, geo_code, name, bn_name, url, status, created_at, updated_at)
+VALUES 
+(gen_random_uuid(), 'D-01', 'Dhaka Division', 'ঢাকা বিভাগ', 'https://dhaka.gov.bd', true, now(), now());
+
+-- District
+INSERT INTO districts (id, division_id, geo_code, name, bn_name, lat, lon, url, status, created_at, updated_at)
+VALUES 
+(gen_random_uuid(), (SELECT id FROM divisions WHERE name='Dhaka Division'), 'DT-01', 'Dhaka District', 'ঢাকা জেলা', 23.8103, 90.4125, 'https://dhaka.gov.bd', true, now(), now());
+
+-- Upazila
+INSERT INTO upazilas (id, district_id, geo_code, name, bn_name, url, status, created_at, updated_at)
+VALUES 
+(gen_random_uuid(), (SELECT id FROM districts WHERE name='Dhaka District'), 'UZ-01', 'Dhanmondi', 'ধানমন্ডি', 'https://dhanmondi.gov.bd', true, now(), now());
+
+-- Municipality
+INSERT INTO municipalities (id, upazila_id, name, bn_name, status, created_at, updated_at)
+VALUES 
+(gen_random_uuid(), (SELECT id FROM upazilas WHERE name='Dhanmondi'), 'Dhanmondi Municipality', 'ধানমন্ডি পৌরসভা', true, now(), now());
+
+-- Union Parishad
+INSERT INTO union_parishads (id, upazila_id, name, bn_name, status, created_at, updated_at)
+VALUES 
+(gen_random_uuid(), (SELECT id FROM upazilas WHERE name='Dhanmondi'), 'Example Union', 'উদাহরণ ইউনিয়ন', true, now(), now());
+
+-- Police Station
+INSERT INTO police_stations (id, district_id, geo_code, bn_name, url, status, created_at, updated_at)
+VALUES 
+(gen_random_uuid(), (SELECT id FROM districts WHERE name='Dhaka District'), 'PS-01', 'Dhanmondi Thana', 'https://dhanmondi-police.gov.bd', true, now(), now());
+
+-- Post Office
+INSERT INTO post_offices (id, district_id, upazila_id, post_office, post_code, created_at, updated_at)
+VALUES
+(gen_random_uuid(), 
+ (SELECT id FROM districts WHERE name='Dhaka District'), 
+ (SELECT id FROM upazilas WHERE name='Dhanmondi'), 
+ 'Dhanmondi Post Office', '1209', now(), now());
+
+
+
+
+
+-- Test all data is work fine
+
+SELECT 
+    d.name AS division,
+    di.name AS district,
+    u.name AS upazila,
+    m.name AS municipality,
+    up.name AS union_parishad,
+    ps.bn_name AS police_station,
+    po.post_office, po.post_code
+FROM divisions d
+LEFT JOIN districts di ON di.division_id = d.id
+LEFT JOIN upazilas u ON u.district_id = di.id
+LEFT JOIN municipalities m ON m.upazila_id = u.id
+LEFT JOIN union_parishads up ON up.upazila_id = u.id
+LEFT JOIN police_stations ps ON ps.district_id = di.id
+LEFT JOIN post_offices po ON po.district_id = di.id AND po.upazila_id = u.id
+WHERE d.name = 'Dhaka Division';
+
+
+
+
+-- delete all data 
+
+DELETE FROM post_offices;
+DELETE FROM police_stations;
+DELETE FROM municipalities;
+DELETE FROM union_parishads;
+DELETE FROM upazilas;
+DELETE FROM districts;
+DELETE FROM divisions;
+
+DELETE FROM religions;
+DELETE FROM blood_groups;
+DELETE FROM skills;
+DELETE FROM intersts;
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '../../config/prisma';
 import { TUserPayload } from '../../types/user';
-import { TCanditateProfile } from './user.validation';
+import { TCanditateProfile, TWorkExperiece, UserProfileValidation } from './user.validation';
 
 
 
@@ -28,7 +28,7 @@ const createCandidatePersonalService = async (
             },
             socialLink: {
                 deleteMany: {},
-                create: socialLink?.map((link: {label: string, url: string}) => ({
+                create: socialLink?.map((link: { label: string, url: string }) => ({
                     label: link.label,
                     url: link.url,
                 })),
@@ -44,7 +44,7 @@ const createCandidatePersonalService = async (
                 connect: interstIds?.map((id: string) => ({ id }))
             },
             socialLink: {
-                create: socialLink?.map((link: {label: string, url: string}) => ({
+                create: socialLink?.map((link: { label: string, url: string }) => ({
                     label: link.label,
                     url: link.url,
                 })),
@@ -62,6 +62,31 @@ const createCandidatePersonalService = async (
 
     return result;
 };
+
+const createCandidateExperienceService = async ( payload: TWorkExperiece, user: TUserPayload) => {
+   console.log(payload )
+
+   // Map payload to Prisma data format
+  const experiences = payload.map(exp => ({
+    userId: user.id,
+    companyName: exp.companyName,
+    designation: exp.designation,
+    startDate: exp.startDate,
+    endDate: exp.endDate,
+    department: exp.department
+  }));
+
+   const result = await prisma.candidateExperience.createMany({
+    data: experiences,
+    skipDuplicates: true, // optional: skip if same record exists
+  });
+  
+
+    return result;
+};
+
+
+
 
 
 
@@ -82,7 +107,8 @@ const me = async (user: TUserPayload) => {
                 include: {
                     religion: true
                 }
-            }
+            },
+            candidateExperiences : true
         }
     })
     return result
@@ -110,10 +136,81 @@ const me = async (user: TUserPayload) => {
 // }
 //////////////////////////////// Profile Services //////////////////////////////////////////////////
 
+
+
+const getDivisionWithDistrictsAndUpazilas = async (payload: {divisionId: string, districtId: string, upazilaId:string}) => {
+    try {
+
+        const {districtId, divisionId, upazilaId} = payload
+
+        console.log(payload)
+ 
+
+        // 1️⃣ No params → return all divisions
+        if (!divisionId && !districtId && !upazilaId) {
+            const divisions = await prisma.division.findMany({
+                select: { id: true, name: true },
+            });
+            return ({ level: "division", data: divisions });
+        }
+
+        // 2️⃣ Division selected → return districts
+        if (divisionId && !districtId && !upazilaId) {
+            const districts = await prisma.district.findMany({
+                where: { divisionId: divisionId as string },
+                select: { id: true, name: true },
+            });
+            return ({ level: "district", data: districts });
+        }
+
+        // 3️⃣ District selected → return upazilas + police stations
+        if (districtId && !upazilaId) {
+            const upazilas = await prisma.upazila.findMany({
+                where: { districtId: districtId as string },
+                select: { id: true, name: true },
+            });
+            const policeStations = await prisma.policeStation.findMany({
+                where: { districtId: districtId as string },
+                select: { id: true, bnName: true },
+            });
+            return ({ level: "upazila", upazilas, policeStations });
+        }
+
+        // 4️⃣ Upazila selected → return municipalities, unions, post offices
+        if (upazilaId) {
+            const municipalities = await prisma.municipality.findMany({
+                where: { upazilaId: upazilaId as string },
+                select: { id: true, name: true },
+            });
+            const unionParishads = await prisma.unionParishad.findMany({
+                where: { upazilaId: upazilaId as string },
+                select: { id: true, name: true },
+            });
+            const postOffices = await prisma.postOffice.findMany({
+                where: { upazilaId: upazilaId as string },
+                select: { id: true, postOffice: true, postCode: true },
+            });
+            return ({
+                level: "upazila-detail",
+                municipalities,
+                unionParishads,
+                postOffices,
+            });
+        }
+
+       return { message: "Invalid query" };
+    } catch (error) {
+        console.error(error);
+        return { message: "Invalid query" };
+    }
+}
+
 export const UserService = {
     createCandidatePersonalService,
+    createCandidateExperienceService,
     me,
     // createCertificate
+    getDivisionWithDistrictsAndUpazilas
 }
 
 

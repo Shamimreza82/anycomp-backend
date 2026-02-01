@@ -2,6 +2,10 @@
 import { z } from "zod";
 
 
+
+
+/////////// personal validation schema //////////////////////
+
 const socialLinkSchema = z.array(
   z.object({
     label: z
@@ -41,14 +45,54 @@ export const userProfileSPersonalchema = z.object({
     .min(1, "At least one skill is required"),
   interstIds: z.array(z.string().uuid("Invalid skill id"))
     .min(1, "At least one skill is required"),
-
 });
+
+/////////// personal validation schema //////////////////////
+
+/////////// Exprience validation schema //////////////////////
+
+export const workExperienceSchema = z.object({
+  companyName: z
+    .string()
+    .min(1, "Company name is required")
+    .min(2, "Company name must be at least 2 characters"),
+
+  companyBusiness: z
+    .string()
+    .min(1, "Company business is required"),
+
+  // location: z
+  //   .string()
+  //   .min(1, "Location is required"),
+
+  designation: z
+    .string()
+    .min(1, "Designation is required"),
+
+  department: z
+    .string()
+    .min(1, "Department is required"),
+
+  startDate: z
+    .string()
+    .datetime({ message: "Start date must be a valid ISO datetime" }),
+
+  endDate: z
+    .string()
+    .datetime({ message: "End date must be a valid ISO datetime" })
+    .optional()
+    .nullable(),
+});
+
+/////////// Exprience validation schema //////////////////////
+const workExperienceArraySchema = z.array(workExperienceSchema);
 
 
 
 
 export const UserProfileValidation = {
-  userProfileSPersonalchema
+  userProfileSPersonalchema, 
+  workExperienceArraySchema
 }
 
 
@@ -61,3 +105,4 @@ export const UserProfileValidation = {
 
 // TypeScript type inferred from Zod
 export type TCanditateProfile = z.infer<typeof userProfileSPersonalchema>;
+export type TWorkExperiece = z.infer<typeof workExperienceArraySchema>;

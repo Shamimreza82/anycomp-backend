@@ -134,7 +134,7 @@ const googleAuth = async (idToken: string) => {
         email: payload.email,
         fullName: payload.name,
         password: Math.random().toString(36).slice(-8), // Random password
-        role: "USER",
+        role: "SPECIALIST",
         isEmailVerified: true,
       },
     });

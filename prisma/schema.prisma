@@ -14,7 +14,7 @@ datasource db {
 
 ////////////// 
 enum Role {
-  SPECIALISTS
+  SPECIALIST
   ADMIN
 }
 
@@ -26,7 +26,7 @@ model User {
   isActive        Boolean      @default(true) @map("is_active")
   isEmailVerified Boolean      @default(false) @map("is_email_verified")
   password        String
-  role            Role         @default(SPECIALISTS)
+  role            Role         @default(SPECIALIST)
   createdAt       DateTime     @default(now()) @map("created_at")
   specialists     Specialists?
 
@@ -145,7 +145,7 @@ model PlatformFee {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
+  
   @@map("platform_fee")
 }
 

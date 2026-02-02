@@ -88,11 +88,13 @@ const dropdown = async () => {
   const religion = await prisma.religion.findMany();
   const skills = await prisma.skill.findMany();
   const interests = await prisma.interst.findMany();
+  const bloodGroup = await prisma.bloodGroup.findMany();
 
   return {
     religion,
     skills,
     interests,
+    bloodGroup,
   };
 };
 

@@ -112,7 +112,10 @@ const me = async (user: TUserPayload) => {
             createdAt: true,
             candidatePersonal: {
                 include: {
-                    religion: true
+                    religion: true, 
+                    interests: true, 
+                    bloodGroup: true, 
+                    skills: true
                 }
             },
             candidateExperiences : true

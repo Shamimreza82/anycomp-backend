@@ -45,6 +45,17 @@ const createCandidateExperience = catchAsync(async (req, res) => {
 })
 
 
+const dropdown = catchAsync(async (req, res) => {
+
+  const result = await UserService.dropdown()
+  res.status(201).json({
+    status: true,
+    message: "get all personal dropdown successfully",
+    data: result
+  })
+})
+
+
 
 // const createCertificate = catchAsync(async (req, res) => {
 //   const files = req.files;
@@ -86,7 +97,8 @@ export const UserController = {
   me,
   
   //// Dropdown query 
-  getDivisionWithDistrictsAndUpazilas
+  getDivisionWithDistrictsAndUpazilas, 
+  dropdown
 }
 
 

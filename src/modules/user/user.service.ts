@@ -86,12 +86,17 @@ const createCandidateExperienceService = async ( payload: TWorkExperiece, user: 
 };
 
 
+const dropdown = async () => {
+   const religion = await prisma.religion.findMany()
+   const skills = await prisma.skill.findMany()
+   const interests = await prisma.interst.findMany()
 
-
-
-
-
-
+    return {
+        religion, 
+        skills, 
+        interests
+    }
+}
 
 const me = async (user: TUserPayload) => {
 
@@ -210,7 +215,8 @@ export const UserService = {
     createCandidateExperienceService,
     me,
     // createCertificate
-    getDivisionWithDistrictsAndUpazilas
+    getDivisionWithDistrictsAndUpazilas, 
+    dropdown
 }
 
 

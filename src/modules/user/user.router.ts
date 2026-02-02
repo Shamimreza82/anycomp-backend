@@ -5,7 +5,7 @@ import express from "express";
 import { UserController } from './user.controller';
 import { validationSchema } from '../../middlewares/validationSchema';
 import { UserProfileValidation } from './user.validation';
-import { prisma } from '../../config/prisma';
+
 // import { validationSchema } from '../../middlewares/validationSchema';
 // import { profileSchema } from './user.validation';
 
@@ -18,14 +18,18 @@ const router = express.Router();
 ///Get my Profile
 router.get('/me', auth(AuthGard.ADMIN, AuthGard.MODERATOR, AuthGard.USER, AuthGard.HR), UserController.me);
 
-///// candidate Profile create /////////////
+///// candidate Profile Personal /////////////
+router.get('/profile/personal/dropdown', UserController.dropdown)
 router.post('/profile/personal', validationSchema(UserProfileValidation.userProfileSPersonalchema), auth(AuthGard.USER), UserController.createCandidatePersonal)
+///// candidate Profile Personal /////////////
+
+
 router.post('/profile/experience',validationSchema(UserProfileValidation.workExperienceArraySchema), auth(AuthGard.USER), UserController.createCandidateExperience)
+router.post('/profile/experience', auth(AuthGard.USER), UserController.createCandidateExperience)
 ///// candidate Profile /////////////
 
 
 //////////////////Dropdown api  /////////////////////
-
 router.get("/profile/cascade",UserController.getDivisionWithDistrictsAndUpazilas);
 
 

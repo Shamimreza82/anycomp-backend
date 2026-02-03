@@ -59,6 +59,32 @@ enum VerificationStatus {
   REJECTED
 }
 
+
+model Specialist {
+  id                     String             @id @default(uuid())
+  average_rating         Decimal?           @db.Decimal(5, 2) // Example: 4.50
+  is_draft               Boolean            @default(true)
+  total_number_of_ratings Int               @default(0)
+  title                  String
+  slug                   String             @unique
+  description            String?            @db.Text
+  base_price             Decimal            @db.Decimal(10, 2)
+  platform_fee           Decimal            @db.Decimal(10, 2)
+  final_price            Decimal            @db.Decimal(10, 2)
+  verification_status    VerificationStatus @default(PENDING)
+  is_verified            Boolean            @default(false)
+  duration_days          Int
+  created_at             DateTime           @default(now())
+  updated_at             DateTime           @updatedAt
+  deleted_at             DateTime?
+
+  @@map("specialists")
+}
+
+
+
+
+
 model Specialists {
   id                   String             @id @default(uuid())
   averageRating        Decimal            @map("average_rating")
@@ -78,39 +104,10 @@ model Specialists {
   @@index([userId])
 }
 
-model Media {
-  id         String    @id @default(uuid())
-  title      String
-  fileName   String    @map("file_name")
-  fileSize   Int       @map("file_size")
-  bucketName String    @map("bucket_name")
-  s3Key      String?   @map("s3_key")
-  mimeType   MimeType  @map("mime_type")
-  mediaType  MediaType @map("media_type")
-  uploadedAt DateTime  @map("uploaded_at")
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+//////// register as a spaclisist  speclist have some services ///////
 
-  @@map("media")
-}
 
-model ServiceOfferingsMasterList {
-  id           String  @id @default(uuid())
-  title        String
-  slug         String
-  description  String
-  displayOrder Int     @map("display_order")
-  isDraft      Boolean @map("is_draft")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  serviceOfferings ServiceOfferings[]
-
-  @@map("service_offerings_master_list")
-}
 
 model ServiceOfferings {
   id           String  @id @default(uuid())
@@ -136,6 +133,45 @@ model ServiceOfferings {
   @@map("service_offerings")
 }
 
+
+model ServiceOfferingsMasterList {
+  id           String  @id @default(uuid())
+  title        String
+  slug         String
+  description  String
+  displayOrder Int     @map("display_order")
+  isDraft      Boolean @map("is_draft")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  serviceOfferings ServiceOfferings[]
+
+  @@map("service_offerings_master_list")
+}
+
+
+
+model Media {
+  id         String    @id @default(uuid())
+  title      String
+  fileName   String    @map("file_name")
+  fileSize   Int       @map("file_size")
+  bucketName String    @map("bucket_name")
+  s3Key      String?   @map("s3_key")
+  mimeType   MimeType  @map("mime_type")
+  mediaType  MediaType @map("media_type")
+  uploadedAt DateTime  @map("uploaded_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("media")
+}
+
+
+
 model PlatformFee {
   id                    String   @id @default(uuid())
   tierName              TierName @map("tier_name")
@@ -148,6 +184,9 @@ model PlatformFee {
   
   @@map("platform_fee")
 }
+
+
+
 
 model Key {
   id  String @id @default(uuid())

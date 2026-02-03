@@ -14,21 +14,22 @@ datasource db {
 
 ////////////// 
 enum Role {
+  USER
   SPECIALIST
   ADMIN
 }
 
 model User {
-  id              String       @id @default(uuid())
-  fullName        String?      @map("full_name")
-  email           String       @unique
-  phone           String?      @unique
-  isActive        Boolean      @default(true) @map("is_active")
-  isEmailVerified Boolean      @default(false) @map("is_email_verified")
+  id              String      @id @default(uuid())
+  fullName        String?     @map("full_name")
+  email           String      @unique
+  phone           String?     @unique
+  isActive        Boolean     @default(true) @map("is_active")
+  isEmailVerified Boolean     @default(false) @map("is_email_verified")
   password        String
-  role            Role         @default(SPECIALIST)
-  createdAt       DateTime     @default(now()) @map("created_at")
-  specialists     Specialists?
+  role            Role        @default(USER)
+  createdAt       DateTime    @default(now()) @map("created_at")
+  specialist      Specialist?
 
   @@index([id, email])
   @@map("users")
@@ -59,57 +60,38 @@ enum VerificationStatus {
   REJECTED
 }
 
-
 model Specialist {
-  id                     String             @id @default(uuid())
-  average_rating         Decimal?           @db.Decimal(5, 2) // Example: 4.50
-  is_draft               Boolean            @default(true)
-  total_number_of_ratings Int               @default(0)
-  title                  String
-  slug                   String             @unique
-  description            String?            @db.Text
-  base_price             Decimal            @db.Decimal(10, 2)
-  platform_fee           Decimal            @db.Decimal(10, 2)
-  final_price            Decimal            @db.Decimal(10, 2)
-  verification_status    VerificationStatus @default(PENDING)
-  is_verified            Boolean            @default(false)
-  duration_days          Int
-  created_at             DateTime           @default(now())
-  updated_at             DateTime           @updatedAt
-  deleted_at             DateTime?
-
-  @@map("specialists")
-}
-
-
-
-
-
-model Specialists {
   id                   String             @id @default(uuid())
-  averageRating        Decimal            @map("average_rating")
-  totalNumberOfRatings Int                @map("total_number_of_ratings")
+  averageRating        Decimal?           @map("average_rating")
+  isDraft              Boolean            @default(true) @map("is_draft")
+  totalNumberOfRatings Int                @default(0) @map("total_number_of_ratings")
+  title                String
+  slug                 String             @unique
+  description          String?            @db.Text
+  basePrice            Decimal            @map("base_price") @db.Decimal(10, 2)
+  platformFee          Decimal            @map("platform_fee") @db.Decimal(10, 2)
+  finalPrice           Decimal            @map("final_price") @db.Decimal(10, 2)
   verificationStatus   VerificationStatus @default(PENDING) @map("verification_status")
   isVerified           Boolean            @default(true) @map("is_verified")
+  durationDays         Int                @map("duration_days")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  deletedAt            DateTime?          @map("deleted_at")
 
   userId String @unique @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  serviceOffering ServiceOffering[]
+  media           Media[]
+  platformFees    PlatformFee?
 
-  serviceOfferings ServiceOfferings[]
-
-  @@map("specialists")
   @@index([userId])
+  @@map("specialists")
 }
-
 
 //////// register as a spaclisist  speclist have some services ///////
 
-
-
-model ServiceOfferings {
+model ServiceOffering {
   id           String  @id @default(uuid())
   title        String
   description  String
@@ -118,21 +100,20 @@ model ServiceOfferings {
   minValue     Int     @map("min_value")
   maxValue     Int     @map("max_value")
   durationDays Int     @map("duration_days")
-  isDraft      Boolean
+  isDraft      Boolean @default(true) @map("is_draft")
 
-  specialistId String @map("specialists")
-  masterListId String @map("service_offerings_master_list_id")
-
-  specialist Specialists                @relation(fields: [specialistId], references: [id])
+  specialistId String
+  masterListId String
+  specialist Specialist                 @relation(fields: [specialistId], references: [id])
   masterList ServiceOfferingsMasterList @relation(fields: [masterListId], references: [id])
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  media      Media[]
+  createdAt  DateTime                   @default(now()) @map("created_at")
+  updatedAt  DateTime                   @updatedAt @map("updated_at")
+  deletedAt  DateTime?                  @map("deleted_at")
 
   @@map("service_offerings")
 }
-
 
 model ServiceOfferingsMasterList {
   id           String  @id @default(uuid())
@@ -140,17 +121,15 @@ model ServiceOfferingsMasterList {
   slug         String
   description  String
   displayOrder Int     @map("display_order")
-  isDraft      Boolean @map("is_draft")
+  isDraft      Boolean @default(true) @map("is_draft")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  serviceOfferings ServiceOfferings[]
+  serviceOfferings ServiceOffering[]
 
-  @@map("service_offerings_master_list")
+  @@map("service_offerings_master_lists")
 }
-
-
 
 model Media {
   id         String    @id @default(uuid())
@@ -163,14 +142,18 @@ model Media {
   mediaType  MediaType @map("media_type")
   uploadedAt DateTime  @map("uploaded_at")
 
+  specialistId String
+  specialist   Specialist @relation(fields: [specialistId], references: [id])
+
+  serviceOfferingId String
+  serviceOffering   ServiceOffering @relation(fields: [serviceOfferingId], references: [id])
+
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  @@map("media")
+  @@map("medias")
 }
-
-
 
 model PlatformFee {
   id                    String   @id @default(uuid())
@@ -179,14 +162,14 @@ model PlatformFee {
   minValue              Int      @map("min_value")
   maxValue              Int      @map("max_value")
 
+  specialistId String     @unique
+  specialist   Specialist @relation(fields: [specialistId], references: [id])
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  
-  @@map("platform_fee")
+
+  @@map("platform_fees")
 }
-
-
-
 
 model Key {
   id  String @id @default(uuid())
@@ -195,5 +178,5 @@ model Key {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("key")
+  @@map("keys")
 }

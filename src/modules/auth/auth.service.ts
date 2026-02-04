@@ -28,6 +28,7 @@ const register = async (payload: TUser) => {
     throw new AppError(404, "User already veryfied. please login");
   }
 
+  
   if (isExist && !isExist.isEmailVerified) {
     const token = createEmailToken(isExist.id);
     const link = `${process.env.BASE_API}/auth/verify-email?token=${token}`;
@@ -65,9 +66,6 @@ const secret = process.env.RECAPTCHA_SECRET_KEY;
   );
 
   console.log(response.data)
-
-
-
 
 
   const result = await prisma.user.findUnique({ where: { email: payload.email, } })

@@ -14,21 +14,22 @@ datasource db {
 
 ////////////// 
 enum Role {
+  USER
   SPECIALIST
   ADMIN
 }
 
 model User {
-  id              String       @id @default(uuid())
-  fullName        String?      @map("full_name")
-  email           String       @unique
-  phone           String?      @unique
-  isActive        Boolean      @default(true) @map("is_active")
-  isEmailVerified Boolean      @default(false) @map("is_email_verified")
+  id              String      @id @default(uuid())
+  fullName        String?     @map("full_name")
+  email           String      @unique
+  phone           String?     @unique
+  isActive        Boolean     @default(true) @map("is_active")
+  isEmailVerified Boolean     @default(false) @map("is_email_verified")
   password        String
-  role            Role         @default(SPECIALIST)
-  createdAt       DateTime     @default(now()) @map("created_at")
-  specialists     Specialists?
+  role            Role        @default(USER)
+  createdAt       DateTime    @default(now()) @map("created_at")
+  specialist      Specialist?
 
   @@index([id, email])
   @@map("users")
@@ -59,23 +60,75 @@ enum VerificationStatus {
   REJECTED
 }
 
-model Specialists {
+model Specialist {
   id                   String             @id @default(uuid())
-  averageRating        Decimal            @map("average_rating")
-  totalNumberOfRatings Int                @map("total_number_of_ratings")
+  averageRating        Decimal?           @map("average_rating")
+  isDraft              Boolean            @default(true) @map("is_draft")
+  totalNumberOfRatings Int                @default(0) @map("total_number_of_ratings")
+  title                String
+  slug                 String             @unique
+  description          String?            @db.Text
+  basePrice            Decimal            @map("base_price") @db.Decimal(10, 2)
+  platformFee          Decimal            @map("platform_fee") @db.Decimal(10, 2)
+  finalPrice           Decimal            @map("final_price") @db.Decimal(10, 2)
   verificationStatus   VerificationStatus @default(PENDING) @map("verification_status")
   isVerified           Boolean            @default(true) @map("is_verified")
+  durationDays         Int                @map("duration_days")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  deletedAt            DateTime?          @map("deleted_at")
 
   userId String @unique @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
+  serviceOffering ServiceOffering[]
+  media           Media[]
+  platformFees    PlatformFee?
+
+  @@index([userId])
+  @@map("specialists")
+}
+
+//////// register as a spaclisist  speclist have some services ///////
+
+model ServiceOffering {
+  id           String  @id @default(uuid())
+  title        String
+  description  String
+  basePrice    Decimal @map("base_price")
+  finalPrice   Decimal @map("final_price")
+  minValue     Int     @map("min_value")
+  maxValue     Int     @map("max_value")
+  durationDays Int     @map("duration_days")
+  isDraft      Boolean @default(true) @map("is_draft")
+
+  specialistId String
+  masterListId String
+  specialist Specialist                 @relation(fields: [specialistId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  masterList ServiceOfferingsMasterList @relation(fields: [masterListId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  media      Media[]
+  createdAt  DateTime                   @default(now()) @map("created_at")
+  updatedAt  DateTime                   @updatedAt @map("updated_at")
+  deletedAt  DateTime?                  @map("deleted_at")
+
+  @@map("service_offerings")
+}
+
+model ServiceOfferingsMasterList {
+  id           String  @id @default(uuid())
+  title        String
+  slug         String
+  description  String
+  displayOrder Int     @map("display_order")
+  isDraft      Boolean @default(true) @map("is_draft")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  serviceOfferings ServiceOfferings[]
+  serviceOfferings ServiceOffering[]
 
-  @@map("specialists")
-  @@index([userId])
+  @@map("service_offerings_master_lists")
 }
 
 model Media {
@@ -89,51 +142,17 @@ model Media {
   mediaType  MediaType @map("media_type")
   uploadedAt DateTime  @map("uploaded_at")
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  specialistId String
+  specialist   Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  @@map("media")
-}
-
-model ServiceOfferingsMasterList {
-  id           String  @id @default(uuid())
-  title        String
-  slug         String
-  description  String
-  displayOrder Int     @map("display_order")
-  isDraft      Boolean @map("is_draft")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  serviceOfferings ServiceOfferings[]
-
-  @@map("service_offerings_master_list")
-}
-
-model ServiceOfferings {
-  id           String  @id @default(uuid())
-  title        String
-  description  String
-  basePrice    Decimal @map("base_price")
-  finalPrice   Decimal @map("final_price")
-  minValue     Int     @map("min_value")
-  maxValue     Int     @map("max_value")
-  durationDays Int     @map("duration_days")
-  isDraft      Boolean
-
-  specialistId String @map("specialists")
-  masterListId String @map("service_offerings_master_list_id")
-
-  specialist Specialists                @relation(fields: [specialistId], references: [id])
-  masterList ServiceOfferingsMasterList @relation(fields: [masterListId], references: [id])
+  serviceOfferingId String
+  serviceOffering   ServiceOffering @relation(fields: [serviceOfferingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  @@map("service_offerings")
+  @@map("medias")
 }
 
 model PlatformFee {
@@ -143,10 +162,13 @@ model PlatformFee {
   minValue              Int      @map("min_value")
   maxValue              Int      @map("max_value")
 
+  specialistId String     @unique
+  specialist   Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  
-  @@map("platform_fee")
+
+  @@map("platform_fees")
 }
 
 model Key {
@@ -156,5 +178,5 @@ model Key {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("key")
+  @@map("keys")
 }

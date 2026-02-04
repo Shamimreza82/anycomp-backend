@@ -1,10 +1,9 @@
 
 
-export type TAuthGuard = "HR" | "ADMIN" | "USER" | "MODERATOR"; 
+export type TRole = "ADMIN" | "SPECIALIST" | "USER"; 
 
-export const AuthGard: Record<TAuthGuard, TAuthGuard> = {
-    HR: "HR",
-    ADMIN: "ADMIN",
+export const Roles: Record<TRole, TRole> = {
     USER: "USER",
-    MODERATOR: "MODERATOR",
+    SPECIALIST:"SPECIALIST", 
+    ADMIN: "ADMIN"
 };

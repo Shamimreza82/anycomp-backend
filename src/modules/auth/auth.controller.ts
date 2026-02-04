@@ -119,6 +119,19 @@ const logout = catchAsync(async (req, res) => {
   }
 });
 
+const me = catchAsync(async (req, res) => {
+
+  const user = req.user as TUserPayload
+
+  const result = await AuthService.me(user)
+
+  res.status(200).json({
+    status: true,
+    message: "User profile fetched successfully",
+    data: result,
+  })
+});
+
 
 ////// Auth /////////
 
@@ -132,6 +145,7 @@ export const AuthController = {
   resetPassword, 
   logout, 
   changePassword, 
+  me
 }
 
 

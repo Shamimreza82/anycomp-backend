@@ -389,6 +389,16 @@ const changePassword = async (payload: { currentPassword: string, newPassword: s
 
 };
 
+const me = async (user: TUserPayload) => {
+  const existingUser = await prisma.user.findUnique({ where: { id: user.id } });
+
+  if (!existingUser) {
+    throw new AppError(404, 'User not found! Please provide valid email!');
+  }
+
+  return existingUser;
+}
+
 
 
 
@@ -405,6 +415,7 @@ export const AuthService = {
   forgotPassword,
   resetPassword,
   changePassword,
+  me
 }
 
 

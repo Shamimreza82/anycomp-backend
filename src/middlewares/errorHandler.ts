@@ -41,7 +41,7 @@ export const globalErrorHandler = (
       <body>
         <div class="error-box">
           <h1>Error!</h1>
-          <p>${message}oooooooooooooooooooo</p>
+          <p>Your token has expired. Please login again.</p>
         </div>
       </body>
     </html>

@@ -10,6 +10,7 @@ import bcrypt from "bcryptjs";
 import { verifyEmailTemplate } from '../../utils/emailTemplate/VerifyLink';
 import { googleOAuthClient } from '../../config/oauth';
 import axios from 'axios';
+import { globalErrorHandler } from '../../middlewares/errorHandler';
 
 
 //////////// Auth Services /////////////
@@ -28,7 +29,7 @@ const register = async (payload: TUser) => {
     throw new AppError(404, "User already veryfied. please login");
   }
 
-  
+
   if (isExist && !isExist.isEmailVerified) {
     const token = createEmailToken(isExist.id);
     const link = `${process.env.BASE_API}/auth/verify-email?token=${token}`;
@@ -48,11 +49,11 @@ const register = async (payload: TUser) => {
 
   return {}
 }
+
 const login = async (payload: TUser) => {
 
-  console.log(payload.recaptchaToken)
 
-const secret = process.env.RECAPTCHA_SECRET_KEY;
+  const secret = process.env.RECAPTCHA_SECRET_KEY;
 
   const response = await axios.post(
     "https://www.google.com/recaptcha/api/siteverify",
@@ -101,8 +102,9 @@ const secret = process.env.RECAPTCHA_SECRET_KEY;
   return { token }
 }
 const googleAuth = async (idToken: string) => {
-  if (!idToken) {
-    throw new AppError(404, "requre idToken")
+  try {
+    if (!idToken) {
+    throw new AppError(404, "require idToken from google")
   }
 
   // 🔐 Verify token with Google
@@ -110,15 +112,11 @@ const googleAuth = async (idToken: string) => {
     idToken,
     audience: process.env.GOOGLE_CLIENT_ID,
   });
-  const payload = ticket.getPayload();
-  // 
+  const payload = ticket.getPayload()
 
-  // const { picture, email, name} = payload || {};
-
-  // console.log(picture, email, name)
 
   if (!payload?.email) {
-    throw new AppError(404, "Invalid OAuth token")
+    throw new AppError(404, "Invalid OAuth token from Google");
   }
 
   // 👤 Find or create user
@@ -127,16 +125,46 @@ const googleAuth = async (idToken: string) => {
   });
 
   if (!user) {
+
+    const randomPassword = Math.random().toString(36).slice(-8); // Generate a random 8-character password
+    const salt = bcrypt.genSaltSync(process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS) : 10);
+    const hash = bcrypt.hashSync(randomPassword, salt);
+
+
     user = await prisma.user.create({
       data: {
         email: payload.email,
         fullName: payload.name,
-        password: Math.random().toString(36).slice(-8), // Random password
-        role: "SPECIALIST",
+        password: hash, // Random password
         isEmailVerified: true,
       },
     });
+    if (user.email) {
+      const emailSubject = 'Your Google Account Password';
+      const bodyHtml = `
+  <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa; padding: 40px;">
+    <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+      <div style="background-color: #4285f4; padding: 20px; text-align: center;">
+        <h1 style="color: #ffffff; font-size: 28px; margin: 0;">Welcome!</h1>
+      </div>
+      <div style="padding: 30px;">
+        <p style="font-size: 16px; color: #555; margin-bottom: 20px;">Hi ${user.fullName},</p>
+        <p style="font-size: 16px; color: #555; margin-bottom: 20px;">Your account has been created. Here's your temporary password:</p>
+        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 4px; text-align: center; margin: 20px 0;">
+          <p style="font-size: 18px; color: #333; font-weight: bold; margin: 0;">${randomPassword}</p>
+        </div>
+        <p style="font-size: 14px; color: #777;">Please change this password after your first login.</p>
+      </div>
+      <div style="background-color: #f0f0f0; padding: 15px; text-align: center;">
+        <p style="font-size: 14px; color: #777; margin: 0;">&copy; ${new Date().getFullYear()} Company Name. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+  `;
+      await sendEmail(user.email, emailSubject, bodyHtml);
+    }
   }
+
 
   const jwtPayload = {
     id: user.id,
@@ -146,11 +174,21 @@ const googleAuth = async (idToken: string) => {
     createdAt: user.createdAt,
     // updatedAt: user.updatedAt
   }
-  const token = jwt.sign(jwtPayload, process.env.JWT_SECRET || "ebdwegweuweurgweurguwer6734873457" as string, {
-    expiresIn: "7d"
+  const token = jwt.sign(jwtPayload, process.env.JWT_SECRET as string, {
+    expiresIn: "365d"
   })
+
+
   return { token }
+  } catch (error) {
+    console.log(error)
+    throw new AppError(500, "Error during Google authentication");
+  
+  }
 }
+
+
+
 const verifyEmail = async (token: string) => {
   const decoded = jwt.verify(token, process.env.EMAIL_SECRET as string) as {
     userId: string; id: string

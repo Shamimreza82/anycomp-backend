@@ -56,6 +56,7 @@ const googleAuth = catchAsync(async (req, res) => {
   res.status(200).json({
     status: true,
     message: "User Login by Google successfully",
+    data: { token },
   })
 })
 const forgotPassword = catchAsync(async (req, res) => {

@@ -20,25 +20,20 @@ enum Role {
 }
 
 model User {
-  id              String      @id @default(uuid())
-  fullName        String?     @map("full_name")
-  email           String      @unique
-  phone           String?     @unique
-  isActive        Boolean     @default(true) @map("is_active")
-  isEmailVerified Boolean     @default(false) @map("is_email_verified")
+  id              String       @id @default(uuid())
+  fullName        String?      @map("full_name")
+  email           String       @unique
+  phone           String?      @unique
+  isActive        Boolean      @default(true) @map("is_active")
+  isEmailVerified Boolean      @default(false) @map("is_email_verified")
   password        String
-  role            Role        @default(USER)
-  createdAt       DateTime    @default(now()) @map("created_at")
-  specialist      Specialist?
+  role            Role         @default(USER)
+  createdAt       DateTime     @default(now()) @map("created_at")
+  specialist      Specialist[]
+  platformFees    PlatformFee?
 
   @@index([id, email])
   @@map("users")
-}
-
-enum MediaType {
-  IMAGE
-  VIDEO
-  DOCUMENT
 }
 
 enum MimeType {
@@ -62,12 +57,12 @@ enum VerificationStatus {
 
 model Specialist {
   id                   String             @id @default(uuid())
+  title                String
+  slug                 String
+  description          String?            @db.Text
   averageRating        Decimal?           @map("average_rating")
   isDraft              Boolean            @default(true) @map("is_draft")
   totalNumberOfRatings Int                @default(0) @map("total_number_of_ratings")
-  title                String
-  slug                 String             @unique
-  description          String?            @db.Text
   basePrice            Decimal            @map("base_price") @db.Decimal(10, 2)
   platformFee          Decimal            @map("platform_fee") @db.Decimal(10, 2)
   finalPrice           Decimal            @map("final_price") @db.Decimal(10, 2)
@@ -78,12 +73,11 @@ model Specialist {
   updatedAt            DateTime           @updatedAt @map("updated_at")
   deletedAt            DateTime?          @map("deleted_at")
 
-  userId String @unique @map("user_id")
+  userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   serviceOffering ServiceOffering[]
   media           Media[]
-  platformFees    PlatformFee?
 
   @@index([userId])
   @@map("specialists")
@@ -104,13 +98,13 @@ model ServiceOffering {
 
   specialistId String
   masterListId String
-  specialist Specialist                 @relation(fields: [specialistId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  masterList ServiceOfferingsMasterList @relation(fields: [masterListId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  specialist   Specialist                 @relation(fields: [specialistId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  masterList   ServiceOfferingsMasterList @relation(fields: [masterListId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  media      Media[]
-  createdAt  DateTime                   @default(now()) @map("created_at")
-  updatedAt  DateTime                   @updatedAt @map("updated_at")
-  deletedAt  DateTime?                  @map("deleted_at")
+  media     Media[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   @@map("service_offerings")
 }
@@ -132,25 +126,24 @@ model ServiceOfferingsMasterList {
 }
 
 model Media {
-  id         String    @id @default(uuid())
+  id         String   @id @default(uuid())
   title      String
-  fileName   String    @map("file_name")
-  fileSize   Int       @map("file_size")
-  bucketName String    @map("bucket_name")
-  s3Key      String?   @map("s3_key")
-  mimeType   MimeType  @map("mime_type")
-  mediaType  MediaType @map("media_type")
-  uploadedAt DateTime  @map("uploaded_at")
+  fileName   String   @map("file_name")
+  fileSize   Int      @map("file_size")
+  bucketName String?  @map("bucket_name")
+  s3Key      String?  @map("s3_key")
+  url        String
+  // mimeType   MimeType?  @map("mime_type")
+  uploadedAt DateTime @map("uploaded_at")
 
   specialistId String
   specialist   Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  serviceOfferingId String
-  serviceOffering   ServiceOffering @relation(fields: [serviceOfferingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+  deletedAt         DateTime?        @map("deleted_at")
+  serviceOffering   ServiceOffering? @relation(fields: [serviceOfferingId], references: [id])
+  serviceOfferingId String?
 
   @@map("medias")
 }
@@ -162,8 +155,8 @@ model PlatformFee {
   minValue              Int      @map("min_value")
   maxValue              Int      @map("max_value")
 
-  specialistId String     @unique
-  specialist   Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

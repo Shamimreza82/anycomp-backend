@@ -8,23 +8,12 @@ const createServiceOffering = async (payload: TCreateServiceOfferingInput, user:
 
     console.log(payload)
 
-    const specialist = await prisma.specialist.findUnique({
-        where: { userId: user.id }, // or user.specialistId if linked differently
-    });
+    // const specialist = await prisma.specialist.findUnique({
+    //     where: { userId: user.id }, // or user.specialistId if linked differently
+    // });
 
-    if (!specialist) {
-        throw new Error("Specialist does not exist. Create the specialist first.");
-    }
 
-    const result = await prisma.serviceOffering.create({
-        data: {
-            ...payload,
-            specialistId: specialist.id,  // ✅ link to Specialist, not User
-            masterListId: payload.masterListId
-        }
-    });
-
-    return result
+return {}
 }
 
 

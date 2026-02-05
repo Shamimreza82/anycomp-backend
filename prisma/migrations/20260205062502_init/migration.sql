@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('SPECIALIST', 'ADMIN');
+CREATE TYPE "Role" AS ENUM ('USER', 'SPECIALIST', 'ADMIN');
 
 -- CreateEnum
 CREATE TYPE "MediaType" AS ENUM ('IMAGE', 'VIDEO', 'DOCUMENT');
@@ -22,7 +22,7 @@ CREATE TABLE "users" (
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "is_email_verified" BOOLEAN NOT NULL DEFAULT false,
     "password" TEXT NOT NULL,
-    "role" "Role" NOT NULL DEFAULT 'SPECIALIST',
+    "role" "Role" NOT NULL DEFAULT 'USER',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
@@ -31,47 +31,24 @@ CREATE TABLE "users" (
 -- CreateTable
 CREATE TABLE "specialists" (
     "id" TEXT NOT NULL,
-    "average_rating" DECIMAL(65,30) NOT NULL,
-    "total_number_of_ratings" INTEGER NOT NULL,
+    "title" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "description" TEXT,
+    "average_rating" DECIMAL(65,30),
+    "is_draft" BOOLEAN NOT NULL DEFAULT true,
+    "total_number_of_ratings" INTEGER NOT NULL DEFAULT 0,
+    "base_price" DECIMAL(10,2) NOT NULL,
+    "platform_fee" DECIMAL(10,2) NOT NULL,
+    "final_price" DECIMAL(10,2) NOT NULL,
     "verification_status" "VerificationStatus" NOT NULL DEFAULT 'PENDING',
     "is_verified" BOOLEAN NOT NULL DEFAULT true,
-    "user_id" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "specialists_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "media" (
-    "id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "file_name" TEXT NOT NULL,
-    "file_size" INTEGER NOT NULL,
-    "bucket_name" TEXT NOT NULL,
-    "s3_key" TEXT,
-    "mime_type" "MimeType" NOT NULL,
-    "media_type" "MediaType" NOT NULL,
-    "uploaded_at" TIMESTAMP(3) NOT NULL,
+    "duration_days" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
+    "user_id" TEXT NOT NULL,
 
-    CONSTRAINT "media_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "service_offerings_master_list" (
-    "id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "slug" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "display_order" INTEGER NOT NULL,
-    "is_draft" BOOLEAN NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "service_offerings_master_list_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "specialists_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -84,9 +61,9 @@ CREATE TABLE "service_offerings" (
     "min_value" INTEGER NOT NULL,
     "max_value" INTEGER NOT NULL,
     "duration_days" INTEGER NOT NULL,
-    "isDraft" BOOLEAN NOT NULL,
-    "specialists" TEXT NOT NULL,
-    "service_offerings_master_list_id" TEXT NOT NULL,
+    "is_draft" BOOLEAN NOT NULL DEFAULT true,
+    "specialistId" TEXT NOT NULL,
+    "masterListId" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
@@ -95,26 +72,61 @@ CREATE TABLE "service_offerings" (
 );
 
 -- CreateTable
-CREATE TABLE "platform_fee" (
+CREATE TABLE "service_offerings_master_lists" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "display_order" INTEGER NOT NULL,
+    "is_draft" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "service_offerings_master_lists_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "medias" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "file_name" TEXT NOT NULL,
+    "file_size" INTEGER NOT NULL,
+    "bucket_name" TEXT NOT NULL,
+    "s3_key" TEXT,
+    "mime_type" "MimeType" NOT NULL,
+    "media_type" "MediaType" NOT NULL,
+    "uploaded_at" TIMESTAMP(3) NOT NULL,
+    "specialistId" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "deleted_at" TIMESTAMP(3),
+    "serviceOfferingId" TEXT,
+
+    CONSTRAINT "medias_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "platform_fees" (
     "id" TEXT NOT NULL,
     "tier_name" "TierName" NOT NULL,
     "platform_fee_percentage" DECIMAL(65,30) NOT NULL,
     "min_value" INTEGER NOT NULL,
     "max_value" INTEGER NOT NULL,
+    "user_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "platform_fee_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "platform_fees_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "key" (
+CREATE TABLE "keys" (
     "id" TEXT NOT NULL,
     "key" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "key_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "keys_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -127,16 +139,31 @@ CREATE UNIQUE INDEX "users_phone_key" ON "users"("phone");
 CREATE INDEX "users_id_email_idx" ON "users"("id", "email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "specialists_slug_key" ON "specialists"("slug");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "specialists_user_id_key" ON "specialists"("user_id");
 
 -- CreateIndex
 CREATE INDEX "specialists_user_id_idx" ON "specialists"("user_id");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "platform_fees_user_id_key" ON "platform_fees"("user_id");
+
 -- AddForeignKey
 ALTER TABLE "specialists" ADD CONSTRAINT "specialists_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "service_offerings" ADD CONSTRAINT "service_offerings_specialists_fkey" FOREIGN KEY ("specialists") REFERENCES "specialists"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "service_offerings" ADD CONSTRAINT "service_offerings_specialistId_fkey" FOREIGN KEY ("specialistId") REFERENCES "specialists"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "service_offerings" ADD CONSTRAINT "service_offerings_service_offerings_master_list_id_fkey" FOREIGN KEY ("service_offerings_master_list_id") REFERENCES "service_offerings_master_list"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "service_offerings" ADD CONSTRAINT "service_offerings_masterListId_fkey" FOREIGN KEY ("masterListId") REFERENCES "service_offerings_master_lists"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "medias" ADD CONSTRAINT "medias_specialistId_fkey" FOREIGN KEY ("specialistId") REFERENCES "specialists"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "medias" ADD CONSTRAINT "medias_serviceOfferingId_fkey" FOREIGN KEY ("serviceOfferingId") REFERENCES "service_offerings"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "platform_fees" ADD CONSTRAINT "platform_fees_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

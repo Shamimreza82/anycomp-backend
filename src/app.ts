@@ -15,26 +15,13 @@ const app: Application = express();
 app.use(cookieParser());
 // Middleware
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://anycomp-frontend-eight.vercel.app",
-];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // allow requests with no origin (Postman, mobile apps)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: "https://anycomp-frontend-eight.vercel.app",
     credentials: true,
   })
-);
+)
 
 app.use(express.json());
 

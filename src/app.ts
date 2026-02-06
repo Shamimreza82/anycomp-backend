@@ -15,7 +15,7 @@ const app: Application = express();
 app.use(cookieParser());
 // Middleware
 app.use(cors({
-  origin: "http://localhost:3000", // your frontend URL
+  origin: ["http://localhost:3000", "https://anycomp-frontend-eight.vercel.app"], // your frontend URL
   credentials: true // allow cookies to be sent
 }));
 app.use(express.json());

@@ -47,19 +47,21 @@ const googleAuth = catchAsync(async (req, res) => {
   const { idToken } = req.body
   const { token } = await AuthService.googleAuth(idToken)
 
-  // res.cookie("token", token, {
-  //   httpOnly: true,
-  //   secure: true,
-  //   sameSite: "none",
-  // })
+  const isProd = process.env.NODE_ENV === "production";
 
   res.cookie("token", token, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "none",
-  path: "/",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-})
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+  })
+
+//   res.cookie("token", token, {
+//   httpOnly: true,
+//   secure: process.env.NODE_ENV === "production",
+//   sameSite: "none",
+//   path: "/",
+//   maxAge: 7 * 24 * 60 * 60 * 1000,
+// })
 
   res.status(200).json({
     status: true,

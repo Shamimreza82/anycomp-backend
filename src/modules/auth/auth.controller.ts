@@ -55,15 +55,12 @@ const googleAuth = catchAsync(async (req, res) => {
   //   sameSite: isProd ? "none" : "lax",
   // })
 
-const isProduction = process.env.NODE_ENV === "production";
-
-res.cookie("token", token, {
-  httpOnly: true,
-  secure: isProduction,          // only secure in production
-  sameSite: isProduction ? "none" : "lax", // none for prod, lax for dev
-  domain: isProduction ? ".vercel.app" : undefined,
-  maxAge: 1000 * 60 * 60 * 24,  // 1 day
-});
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,          // REQUIRED in production (HTTPS)
+    sameSite: "none",      // REQUIRED for cross-site
+    path: "/",
+  });
 
   res.status(200).json({
     status: true,
@@ -154,10 +151,10 @@ export const AuthController = {
   login,
   verifyEmail,
   googleAuth,
-  forgotPassword, 
-  resetPassword, 
-  logout, 
-  changePassword, 
+  forgotPassword,
+  resetPassword,
+  logout,
+  changePassword,
   me
 }
 

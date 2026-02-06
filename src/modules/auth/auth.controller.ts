@@ -47,21 +47,23 @@ const googleAuth = catchAsync(async (req, res) => {
   const { idToken } = req.body
   const { token } = await AuthService.googleAuth(idToken)
 
-  const isProd = process.env.NODE_ENV === "production";
+  // const isProd = process.env.NODE_ENV === "production";
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? "none" : "lax",
-  })
+  // res.cookie("token", token, {
+  //   httpOnly: true,
+  //   secure: isProd,
+  //   sameSite: isProd ? "none" : "lax",
+  // })
 
-//   res.cookie("token", token, {
-//   httpOnly: true,
-//   secure: process.env.NODE_ENV === "production",
-//   sameSite: "none",
-//   path: "/",
-//   maxAge: 7 * 24 * 60 * 60 * 1000,
-// })
+const isProduction = process.env.NODE_ENV === "production";
+
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: isProduction,          // only secure in production
+  sameSite: isProduction ? "none" : "lax", // none for prod, lax for dev
+  domain: isProduction ? ".vercel.app" : undefined,
+  maxAge: 1000 * 60 * 60 * 24,  // 1 day
+});
 
   res.status(200).json({
     status: true,

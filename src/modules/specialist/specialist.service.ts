@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "../../config/prisma"
 import { TUserPayload } from "../../types/user"
-import { Roles } from "../../utils/constant/auth.Constant"
 import { TCreateSpecialistInput } from "./specialist.validation"
 
 
@@ -66,8 +65,6 @@ const getAllSpecialists = async (
     },
   };
 };
-
-
 const editSpecialist = async (id: string, payload: TCreateSpecialistInput) => {
 
     const result = await prisma.specialist.update({
@@ -77,7 +74,6 @@ const editSpecialist = async (id: string, payload: TCreateSpecialistInput) => {
 
     return result
 }
-
 const deleteSpecialist = async (id: string) => {
 
     const result = await prisma.specialist.delete({
@@ -86,8 +82,6 @@ const deleteSpecialist = async (id: string) => {
 
     return result
 }  
-
-
 const verificationStatus = async (id: string) => {
 
     const result = await prisma.specialist.update({
@@ -98,9 +92,6 @@ const verificationStatus = async (id: string) => {
     return result   
 
 }
-
-
-
 const verificationUnpublish = async (id: string) => {
 
     const result = await prisma.specialist.update({
@@ -111,8 +102,6 @@ const verificationUnpublish = async (id: string) => {
     return result   
 
 }
-
-
 const getaAllSpacialist = async () => {
 
     const result = await prisma.specialist.findMany({
@@ -122,7 +111,6 @@ const getaAllSpacialist = async () => {
     return result
 
 }
-
 const getSingleSpecialistById = async (id: string) => {
 
     const result = await prisma.specialist.findUnique({

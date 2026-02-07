@@ -24,7 +24,7 @@ app.use(cookieParser());
 // )
 
 
-
+app.set("trust proxy", 1);
 app.use(
   cors({
     origin: "https://anycomp-frontend-eight.vercel.app",

@@ -57,11 +57,11 @@ const googleAuth = catchAsync(async (req, res) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: true,          // REQUIRED in production (HTTPS)
-    sameSite: "none",      // REQUIRED for cross-site
+    secure: true,      // Must be true on Render
+    sameSite: "none",  // Must be "none" for cross-site
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
     path: "/",
   });
-
   res.status(200).json({
     status: true,
     message: "User Login by Google successfully",

@@ -10,7 +10,7 @@ import bcrypt from "bcryptjs";
 import { verifyEmailTemplate } from '../../utils/emailTemplate/VerifyLink';
 import { googleOAuthClient } from '../../config/oauth';
 import axios from 'axios';
-import { globalErrorHandler } from '../../middlewares/errorHandler';
+
 
 
 //////////// Auth Services /////////////

@@ -1,32 +1,50 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "../../config/prisma"
 import { TUserPayload } from "../../types/user"
+import uploadToCloudinary from "../../utils/uploadToCloudinary";
 import { TCreateSpecialistInput } from "./specialist.validation"
 
 
-const createSpecialist = async (payload: TCreateSpecialistInput, user: TUserPayload) => {
+const createSpecialist = async (
+  payload: TCreateSpecialistInput,
+  user: TUserPayload,
+  files: Express.Multer.File[]
+) => {
+  // 1️⃣ Create the specialist
 
+  console.log(payload)
+  const specialist = await prisma.specialist.create({
+    data: {
+      ...payload,
+      userId: user.id,
+    },
+  });
 
-    // const result = await prisma.specialist.upsert({
-    //     where: { userId: user.id },
-    //     update: { ...payload },
-    //     create: { ...payload, userId: user.id }
-    // })
+  console.log(specialist)
 
-    // if (result) {
-    //     await prisma.user.update({
-    //         where: { id: user.id },
-    //         data: { role: Roles.SPECIALIST }
-    //     })
-    // }
+  // 2️⃣ Upload each file to Cloudinary and store the result
+  const mediaData = await Promise.all(
+    files.map(async (file) => {
+      const cloudUrl = await uploadToCloudinary(file.buffer, "specialists", "image");
 
-      const result = await prisma.specialist.create({
-        data: { ...payload, userId: user.id }
+      return {
+        url: cloudUrl,
+        specialistId: specialist.id,
+        title: file.originalname,
+        fileName: file.originalname, // you can keep original name
+        fileSize: file.size,
+        uploadedAt: new Date(),
+      };
     })
+  );
 
-    return result
-}
+  // 3️⃣ Save all media records in the database
+  await prisma.media.createMany({
+    data: mediaData,
+  });
 
+  return specialist;
+};
 
 const getAllSpecialists = async (
   params: { page?: number; limit?: number; search?: string },
@@ -106,7 +124,8 @@ const getaAllSpacialist = async () => {
 
     const result = await prisma.specialist.findMany({
         where: { verificationStatus: "APPROVED", isDraft: false },
-        include: { user: true }
+        include: { user: {select: { id: true, fullName: true, email: true }}, media: { select: { url: true, title: true } } }, 
+        
     })  
     return result
 

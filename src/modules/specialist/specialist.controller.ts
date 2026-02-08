@@ -1,16 +1,20 @@
 import { TUserPayload } from '../../types/user';
 import { catchAsync } from './../../utils/catchAsync';
 import { SpecialistService } from './specialist.service';
+import { createSpecialistZodSchema, TCreateSpecialistInput } from './specialist.validation';
 
 
 const createSpecialist = catchAsync(async (req, res) => {
 
     const user = req.user as TUserPayload 
 
-    console.log(user)
+    const file = req.files as Express.Multer.File[]
 
-    const result =  await SpecialistService.createSpecialist(req.body, user)
+    const data = JSON.parse(req.body.data) as TCreateSpecialistInput
 
+    const validation = createSpecialistZodSchema.parse(data)
+
+    const result =  await SpecialistService.createSpecialist(validation, user, file)
  res.json({
     success: true, 
     message: "Specialist create successfull", 

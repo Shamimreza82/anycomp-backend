@@ -4,13 +4,15 @@ import { createSpecialistZodSchema } from './specialist.validation';
 import { SpecialistController } from './specialist.controller';
 import { auth } from '../../middlewares/auth';
 import { Roles } from '../../utils/constant/auth.Constant';
+import multer from 'multer';
 
 const router = express.Router()
 
 
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-
-router.post("/", validationSchema(createSpecialistZodSchema), auth(Roles.USER, Roles.SPECIALIST), SpecialistController.createSpecialist)
+router.post("/",upload.array("files"), auth(Roles.USER, Roles.SPECIALIST), SpecialistController.createSpecialist)
 router.get("/", auth(Roles.USER, Roles.SPECIALIST), SpecialistController.getAllSpecialists)
 router.patch("/:id", validationSchema(createSpecialistZodSchema), auth(Roles.USER, Roles.SPECIALIST), SpecialistController.editSpecialist)
 router.delete("/:id", auth(Roles.USER, Roles.SPECIALIST), SpecialistController.deleteSpecialist)

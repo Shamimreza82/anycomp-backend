@@ -16,7 +16,6 @@ import axios from 'axios';
 //////////// Auth Services /////////////
 const register = async (payload: TUser) => {
 
-
   const salt = bcrypt.genSaltSync(process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS) : 10);
   const hash = bcrypt.hashSync(payload.password, salt);
   payload.password = hash;

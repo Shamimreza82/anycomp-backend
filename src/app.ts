@@ -16,21 +16,21 @@ app.use(cookieParser());
 // Middleware
 
 
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-)
-
-
-// app.set("trust proxy", 1);
 // app.use(
 //   cors({
-//     origin: "https://anycomp-frontend-eight.vercel.app",
+//     origin: "http://localhost:3000",
 //     credentials: true,
 //   })
 // )
+
+
+app.set("trust proxy", 1);
+app.use(
+  cors({
+    origin: ["https://anycomp-frontend-eight.vercel.app", "http://localhost:3000"],
+    credentials: true,
+  })
+)
 
 app.use(express.json());
 

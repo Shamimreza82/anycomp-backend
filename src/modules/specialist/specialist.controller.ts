@@ -1,7 +1,7 @@
 import { TUserPayload } from '../../types/user';
 import { catchAsync } from './../../utils/catchAsync';
 import { SpecialistService } from './specialist.service';
-import { createSpecialistZodSchema, TCreateSpecialistInput } from './specialist.validation';
+import { createSpecialistZodSchema, TCreateSpecialistInput, updateSpecialistZodSchema } from './specialist.validation';
 
 
 const createSpecialist = catchAsync(async (req, res) => {
@@ -45,12 +45,21 @@ const getAllSpecialists = catchAsync(async (req, res) => {
 const editSpecialist = catchAsync(async (req, res) => {
 
     const { id } = req.params;
+    const data = JSON.parse(req.body.data) as TCreateSpecialistInput
 
-    const result =  await SpecialistService.editSpecialist(id as string, req.body)
+    console.log(data)
+        const files = req.files as Express.Multer.File[]
+
+        console.log(files)
+
+    const validation = updateSpecialistZodSchema.parse(data)
+
+    const result =  await SpecialistService.editSpecialist(id as string, validation, files)
+
 
  res.json({
-    success: true, 
-    message: "Specialist edit successfull", 
+      success: true, 
+      message: "Specialist edit successfull", 
     statusCode: 200, 
     data: result
  })

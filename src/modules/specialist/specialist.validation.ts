@@ -58,5 +58,6 @@ export type TCreateSpecialistInput = z.infer<typeof createSpecialistZodSchema>;
  * Update schema (partial)
  */
 export const updateSpecialistZodSchema = createSpecialistZodSchema.partial();
+export type TUpdateSpecialistInput = z.infer<typeof updateSpecialistZodSchema>;
 
 

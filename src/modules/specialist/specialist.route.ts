@@ -1,6 +1,4 @@
 import express from 'express';
-import { validationSchema } from '../../middlewares/validationSchema';
-import { createSpecialistZodSchema } from './specialist.validation';
 import { SpecialistController } from './specialist.controller';
 import { auth } from '../../middlewares/auth';
 import { Roles } from '../../utils/constant/auth.Constant';
@@ -14,7 +12,7 @@ const upload = multer({ storage });
 
 router.post("/",upload.array("files"), auth(Roles.USER, Roles.SPECIALIST), SpecialistController.createSpecialist)
 router.get("/", auth(Roles.USER, Roles.SPECIALIST), SpecialistController.getAllSpecialists)
-router.patch("/:id", validationSchema(createSpecialistZodSchema), auth(Roles.USER, Roles.SPECIALIST), SpecialistController.editSpecialist)
+router.patch("/:id", upload.array("files"),auth(Roles.USER, Roles.SPECIALIST), SpecialistController.editSpecialist)
 router.delete("/:id", auth(Roles.USER, Roles.SPECIALIST), SpecialistController.deleteSpecialist)
 router.patch("/:id/status", auth(Roles.ADMIN,  Roles.USER, Roles.SPECIALIST), SpecialistController.verificationStatus)
 router.patch("/:id/unpublish", auth(Roles.ADMIN, Roles.USER, Roles.SPECIALIST), SpecialistController.unpublishSpecialist)

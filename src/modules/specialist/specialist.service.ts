@@ -1,8 +1,9 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "../../config/prisma"
 import { TUserPayload } from "../../types/user"
 import uploadToCloudinary from "../../utils/uploadToCloudinary";
-import { TCreateSpecialistInput } from "./specialist.validation"
+import { TCreateSpecialistInput, TUpdateSpecialistInput } from "./specialist.validation"
 
 
 const createSpecialist = async (
@@ -83,15 +84,40 @@ const getAllSpecialists = async (
     },
   };
 };
-const editSpecialist = async (id: string, payload: TCreateSpecialistInput) => {
+const editSpecialist = async (id: string, payload: TUpdateSpecialistInput, files: Express.Multer.File[]) => {
 
     const result = await prisma.specialist.update({
         where: { id },
         data: { ...payload }
     })
+  
+ if (files && files.length > 0) {
+    // Upload each file to Cloudinary and store the result
+    const updateMedia = await Promise.all(
+      files.map(async (file) => {
+        const cloudUrl = await uploadToCloudinary(file.buffer, "specialists", "image");
+
+        return {
+          url: cloudUrl,
+           specialistId: result.id,
+          title: file.originalname,
+          fileName: file.originalname, // you can keep original name
+          fileSize: file.size,
+          uploadedAt: new Date(),
+        };
+      })
+    );
+
+  // Save all media records in the database
+  await prisma.media.createMany({
+    data: updateMedia,
+  }); 
+ 
+
+
 
     return result
-}
+}   }
 const deleteSpecialist = async (id: string) => {
 
     const result = await prisma.specialist.delete({
